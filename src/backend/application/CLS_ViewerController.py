@@ -6,30 +6,30 @@ from .CLS_TimerLifecycleManager  import CLS_TimerLifecycleManager
 # Main backend controller that coordinates the application managers.
 class CLS_ViewerController:
     def __init__(
-        self,
-        section_manager         : CLS_SectionManager,
-        layout_manager          : CLS_LayoutManager,
-        timer_lifecycle_manager : CLS_TimerLifecycleManager,
+        self, 
+        clsSectionManager         : CLS_SectionManager,
+        clsLayoutManager          : CLS_LayoutManager,
+        clsTimerLifecycleManager  : CLS_TimerLifecycleManager,
     ) -> None:
         # Store the managers provided by the caller.
-        self._section_manager         = section_manager
-        self._layout_manager          = layout_manager
-        self._timer_lifecycle_manager = timer_lifecycle_manager
+        self._clsSectionManager         = clsSectionManager
+        self._clsLayoutManager          = clsLayoutManager
+        self._clsTimerLifecycleManager  = clsTimerLifecycleManager
 
     @property
     def section_manager(self) -> CLS_SectionManager:
         # Give read-only access to the section manager.
-        return self._section_manager
+        return self._clsSectionManager
 
     @property
     def layout_manager(self) -> CLS_LayoutManager:
         # Give read-only access to the layout manager.
-        return self._layout_manager
+        return self._clsLayoutManager
 
     @property
     def timer_lifecycle_manager(self) -> CLS_TimerLifecycleManager:
         # Give read-only access to the timer lifecycle manager.
-        return self._timer_lifecycle_manager
+        return self._clsTimerLifecycleManager
 
     # Prepare the backend for use. Not implemented yet.
     def initialize(self) -> None:
