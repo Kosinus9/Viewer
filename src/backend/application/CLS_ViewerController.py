@@ -1,15 +1,16 @@
-from pathlib                           import Path
+from pathlib                                import Path
+from uuid                                   import uuid4
 
-from .CLS_LayoutManager                import CLS_LayoutManager
-from .CLS_SectionManager               import CLS_SectionManager
-from .CLS_TimerLifecycleManager        import CLS_TimerLifecycleManager
+from .CLS_LayoutManager                     import CLS_LayoutManager
+from .CLS_SectionManager                    import CLS_SectionManager
+from .CLS_TimerLifecycleManager             import CLS_TimerLifecycleManager
 
-from ..domain.DUT.ENUM.E_CommandType   import E_CommandType
-from ..domain.DUT.STRUCT.ST_Command    import ST_Command
-from ..domain.DUT.STRUCT.ST_Job        import ST_Job
-from ..domain.DUT.STRUCT.ST_JobSection import ST_JobSection
-from ..domain.DUT.STRUCT.ST_JobLayout import ST_JobLayout
-from ..domain.DUT.STRUCT.ST_JobLifecycle import ST_JobLifecycle
+from ..domain.DUT.ENUM.E_CommandType        import E_CommandType
+from ..domain.DUT.STRUCT.ST_Command         import ST_Command
+from ..domain.DUT.STRUCT.ST_Job             import ST_Job
+from ..domain.DUT.STRUCT.ST_JobSection      import ST_JobSection
+from ..domain.DUT.STRUCT.ST_JobLayout       import ST_JobLayout
+from ..domain.DUT.STRUCT.ST_JobLifecycle    import ST_JobLifecycle
 
 # Main backend controller that coordinates the application managers.
 class CLS_ViewerController:
@@ -59,9 +60,7 @@ class CLS_ViewerController:
             raise ValueError("OPEN requires a file_path.")
 
         file_name      = Path(file_path).name
-        section_id     = self._clsSectionManager.find_section(file_name, file_path)
-        if section_id is None:
-            section_id = self._clsSectionManager.create_section(file_name, file_path)
+        section_id     = str(uuid4())
 
         stJobSection   = ST_JobSection(
             file_name  = file_name,
