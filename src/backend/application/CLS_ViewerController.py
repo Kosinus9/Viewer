@@ -57,10 +57,14 @@ class CLS_ViewerController:
             raise ValueError("OPEN requires a file_path.")
 
         file_name = Path(file_path).name
+        section_id = self._clsSectionManager.find_section(file_name, file_path)
+        if section_id is None:
+            section_id = self._clsSectionManager.create_section(file_name, file_path)
+
         stJobSection = ST_JobSection(
-            file_name=file_name,
-            file_path=file_path,
-            section_id=None,
+            file_name  = file_name,
+            file_path  = file_path,
+            section_id = section_id,
         )
 
         # Complete ST_Job construction awaits layout and lifecycle data.
