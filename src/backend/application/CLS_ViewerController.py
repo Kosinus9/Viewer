@@ -45,12 +45,6 @@ class CLS_ViewerController:
 
         if command_type == E_CommandType.OPEN:
             self.create_job(stCommand)
-        elif command_type == E_CommandType.SHOW:
-            pass
-        elif command_type == E_CommandType.HIDE:
-            pass
-        elif command_type == E_CommandType.CLOSE:
-            pass
         elif command_type == E_CommandType.RESET:
             pass
 
