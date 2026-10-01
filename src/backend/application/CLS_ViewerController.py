@@ -1,9 +1,13 @@
+from pathlib import Path
+
 from .CLS_LayoutManager             import CLS_LayoutManager
 from .CLS_SectionManager            import CLS_SectionManager
 from .CLS_TimerLifecycleManager     import CLS_TimerLifecycleManager
 
 from ..domain.DUT.ENUM.E_CommandType import E_CommandType
 from ..domain.DUT.STRUCT.ST_Command import ST_Command
+from ..domain.DUT.STRUCT.ST_Job import ST_Job
+from ..domain.DUT.STRUCT.ST_JobSection import ST_JobSection
 
 # Main backend controller that coordinates the application managers.
 class CLS_ViewerController:
@@ -37,8 +41,7 @@ class CLS_ViewerController:
         command_type = stCommand.command_type
 
         if command_type == E_CommandType.OPEN:
-            # Job creation will be connected here later.
-            pass
+            self.create_job(stCommand)
         elif command_type == E_CommandType.SHOW:
             pass
         elif command_type == E_CommandType.HIDE:
@@ -47,6 +50,21 @@ class CLS_ViewerController:
             pass
         elif command_type == E_CommandType.RESET:
             pass
+
+    def create_job(self, stCommand: ST_Command) -> ST_Job | None:
+        file_path = stCommand.file_path
+        if not file_path:
+            raise ValueError("OPEN requires a file_path.")
+
+        file_name = Path(file_path).name
+        stJobSection = ST_JobSection(
+            file_name=file_name,
+            file_path=file_path,
+            section_id=None,
+        )
+
+        # Complete ST_Job construction awaits layout and lifecycle data.
+        return None
 
     # Prepare the backend for use. Not implemented yet.
     def initialize(self) -> None:
