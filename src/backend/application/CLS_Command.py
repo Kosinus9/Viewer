@@ -1,5 +1,5 @@
 ﻿from ..domain.DUT.ENUM.E_CommandType import E_CommandType
-from ..domain.DUT.STRUCT.ST_Command import ST_Command
+from ..domain.DUT.STRUCT.ST_Command  import ST_Command
 
 
 class CLS_Command:
