@@ -38,6 +38,23 @@ class CLS_SectionManager:
     def get_section(self, section_id: str) -> CLS_ViewSection | None:
         return self._sections.get(section_id)
 
+    def show_section(self, section_id: str) -> None:
+        clsViewSection = self.get_section(section_id)
+        if clsViewSection is not None:
+            clsViewSection.show()
+
+    def hide_section(self, section_id: str) -> None:
+        clsViewSection = self.get_section(section_id)
+        if clsViewSection is not None:
+            clsViewSection.hide()
+
+    def close_section(self, section_id: str) -> None:
+        clsViewSection = self.get_section(section_id)
+        if clsViewSection is not None:
+            clsViewSection.close()
+            # Removal follows the synchronous return of close().
+            self.remove_section(section_id)
+
     # Return an existing section ID for reuse, or None if no section matches.
     # Both file name and file path must match to identify the same file.
     def find_section(self, file_name: str, file_path: str) -> str | None:
