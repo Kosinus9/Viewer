@@ -1,6 +1,5 @@
-from uuid import uuid4
-
-from ..domain.CLS_ViewSection import CLS_ViewSection
+from ..domain.CLS_ViewSection   import CLS_ViewSection
+from ..domain.DUT.STRUCT.ST_Job import ST_Job
 
 
 # Manage active view sections and their section IDs.
@@ -18,22 +17,26 @@ class CLS_SectionManager:
     def initialize(self) -> None:
         pass
 
-    # Create a section for a file and return its unique section ID.
-    def create_section(self, file_name: str, file_path: str) -> str:
-        section_id     = str(uuid4())
-        while section_id in self._sections:
-            section_id = str(uuid4())
+    # Register a section using the ID already supplied by the Job.
+    def create_section(self, stJob: ST_Job) -> str:
+        stJobSection = stJob.stJobSection
+        section_id   = stJobSection.section_id
+        if not isinstance(section_id, str) or not section_id:
+            raise ValueError("Job requires a non-empty section_id.")
+        if section_id in self._sections:
+            raise ValueError("section_id is already registered.")
 
-        self._sections[section_id] = CLS_ViewSection(
+        clsViewSection = CLS_ViewSection(
             section_id = section_id,
-            file_name  = file_name,
-            file_path  = file_path,
+            file_name  = stJobSection.file_name,
+            file_path  = stJobSection.file_path,
         )
+        self._sections[section_id] = clsViewSection
         return section_id
 
     # Return the section with this ID, or None if it does not exist.
     def get_section(self, section_id: str) -> CLS_ViewSection | None:
-        pass
+        return self._sections.get(section_id)
 
     # Return an existing section ID for reuse, or None if no section matches.
     # Both file name and file path must match to identify the same file.
@@ -44,10 +47,10 @@ class CLS_SectionManager:
         return None
 
     def remove_section(self, section_id: str) -> None:
-        pass
+        self._sections.pop(section_id, None)
 
     def clear_sections(self) -> None:
-        pass
+        self._sections.clear()
 
     def reset(self) -> None:
-        pass
+        self.clear_sections()
