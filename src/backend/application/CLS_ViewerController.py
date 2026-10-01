@@ -1,7 +1,9 @@
-from .CLS_LayoutManager          import CLS_LayoutManager
-from .CLS_SectionManager         import CLS_SectionManager
-from .CLS_TimerLifecycleManager  import CLS_TimerLifecycleManager
+from .CLS_LayoutManager             import CLS_LayoutManager
+from .CLS_SectionManager            import CLS_SectionManager
+from .CLS_TimerLifecycleManager     import CLS_TimerLifecycleManager
 
+from ..domain.DUT.ENUM.E_CommandType import E_CommandType
+from ..domain.DUT.STRUCT.ST_Command import ST_Command
 
 # Main backend controller that coordinates the application managers.
 class CLS_ViewerController:
@@ -30,6 +32,21 @@ class CLS_ViewerController:
     def timer_lifecycle_manager(self) -> CLS_TimerLifecycleManager:
         # Give read-only access to the timer lifecycle manager.
         return self._clsTimerLifecycleManager
+
+    def process_command(self, stCommand: ST_Command) -> None:
+        command_type = stCommand.command_type
+
+        if command_type == E_CommandType.OPEN:
+            # Job creation will be connected here later.
+            pass
+        elif command_type == E_CommandType.SHOW:
+            pass
+        elif command_type == E_CommandType.HIDE:
+            pass
+        elif command_type == E_CommandType.CLOSE:
+            pass
+        elif command_type == E_CommandType.RESET:
+            pass
 
     # Prepare the backend for use. Not implemented yet.
     def initialize(self) -> None:
