@@ -1,3 +1,6 @@
+from ..domain.DUT.STRUCT.ST_JobLifecycle import ST_JobLifecycle
+
+
 # Manage section timing and timer lifecycle operations.
 class CLS_TimerLifecycleManager:
     def __init__(self) -> None:
@@ -9,7 +12,10 @@ class CLS_TimerLifecycleManager:
         # Access the active timers.
         return self._active_timers
 
-    # Public operations will be implemented later.
+    def get_lifecycle(self) -> ST_JobLifecycle:
+        return ST_JobLifecycle()
+
+    # Timer operations will be implemented later.
     def initialize(self) -> None:
         pass
 

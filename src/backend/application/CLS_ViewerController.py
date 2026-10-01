@@ -72,8 +72,14 @@ class CLS_ViewerController:
             # Screen dimensions must be supplied before calculating the layout.
             return None
 
-        # Complete ST_Job construction awaits lifecycle data.
-        return None
+        stJobLifecycle = self._clsTimerLifecycleManager.get_lifecycle()
+        stJob = ST_Job(
+            command_type   = stCommand.command_type,
+            stJobSection   = stJobSection,
+            stJobLayout    = stJobLayout,
+            stJobLifecycle = stJobLifecycle,
+        )
+        return stJob
 
     # Prepare the backend for use. Not implemented yet.
     def initialize(self) -> None:
