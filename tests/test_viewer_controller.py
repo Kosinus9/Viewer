@@ -58,7 +58,7 @@ class TestViewerController(unittest.TestCase):
         create_job.assert_called_once_with(command)
         create_section.assert_called_once_with(job)
         self.assertIs(create_section.call_args.args[0], job)
-        self.assertEqual(len(self.clsSectionManager.sections), 1)
+        self.assertEqual(len(self.clsSectionManager.view_sections), 1)
         clsViewSection = self.clsSectionManager.get_section(job.stJobSection.section_id)
         self.assertIsNotNone(clsViewSection)
         self.assertEqual(clsViewSection.section_id, job.stJobSection.section_id)
@@ -73,7 +73,7 @@ class TestViewerController(unittest.TestCase):
                         patch.object(self.clsSectionManager, "create_section") as create_section:
                     self.assertIsNone(self.clsViewerController.process_command(command))
                     create_section.assert_not_called()
-        self.assertEqual(self.clsSectionManager.sections, {})
+        self.assertEqual(self.clsSectionManager.view_sections, {})
 
     def test_routes_existing_sections_without_creating_jobs(self):
         for command_type, method_name in (

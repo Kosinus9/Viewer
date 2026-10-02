@@ -60,19 +60,19 @@ class TestMultiSections(unittest.TestCase):
                     self.assertEqual(clsViewSection.file_name, file_name)
                     self.assertEqual(clsViewSection.file_path, file_path)
                     expected_sections[section_id] = (clsViewSection, file_name, file_path)
-                    self.assertEqual(len(clsSectionManager.sections), index)
-                    self.assertEqual(set(clsSectionManager.sections), set(expected_sections))
+                    self.assertEqual(len(clsSectionManager.view_sections), index)
+                    self.assertEqual(set(clsSectionManager.view_sections), set(expected_sections))
                     for section_id, (clsViewSection, file_name, file_path) in expected_sections.items():
                         self.assertIs(clsSectionManager.get_section(section_id), clsViewSection)
                         self.assertEqual(clsViewSection.file_name, file_name)
                         self.assertEqual(clsViewSection.file_path, file_path)
 
-        self.assertEqual(len(clsSectionManager.sections), 7)
-        section_ids = [clsViewSection.section_id for clsViewSection in clsSectionManager.sections.values()]
+        self.assertEqual(len(clsSectionManager.view_sections), 7)
+        section_ids = [clsViewSection.section_id for clsViewSection in clsSectionManager.view_sections.values()]
         self.assertEqual(len(set(section_ids)), 7)
         print("\n[TEST MULTI-SECTIONS]\n")
-        print(f"Nombre de sections : {len(clsSectionManager.sections)}\n")
-        for index, clsViewSection in enumerate(clsSectionManager.sections.values(), start=1):
+        print(f"Nombre de sections : {len(clsSectionManager.view_sections)}\n")
+        for index, clsViewSection in enumerate(clsSectionManager.view_sections.values(), start=1):
             print(
                 f"Section {index}\n"
                 f"  section_id : {clsViewSection.section_id}\n"

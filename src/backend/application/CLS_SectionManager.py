@@ -6,12 +6,12 @@ from ..domain.DUT.STRUCT.ST_Job import ST_Job
 class CLS_SectionManager:
     def __init__(self) -> None:
         # Map each section ID to its CLS_ViewSection instance.
-        self._sections: dict[str, CLS_ViewSection] = {}
+        self._view_sections: dict[str, CLS_ViewSection] = {}
 
     @property
-    def sections(self) -> dict[str, CLS_ViewSection]:
-        # Access active sections by their IDs.
-        return self._sections
+    def view_sections(self) -> dict[str, CLS_ViewSection]:
+        # Access active CLS_ViewSection instances by their section IDs.
+        return self._view_sections
 
     # Initialization will be implemented later.
     def initialize(self) -> None:
@@ -40,7 +40,7 @@ class CLS_SectionManager:
         if not isinstance(section_id, str) or not section_id:
             print("[TRACE TEMP][SectionManager] Rejet : section_id invalide")
             raise ValueError("Job requires a non-empty section_id.")
-        if section_id in self._sections:
+        if section_id in self._view_sections:
             print("[TRACE TEMP][SectionManager] Rejet : section_id deja enregistre")
             raise ValueError("section_id is already registered.")
 
@@ -51,9 +51,9 @@ class CLS_SectionManager:
             file_name  = stJobSection.file_name,
             file_path  = stJobSection.file_path,
         )
-        self._sections[section_id] = clsViewSection
+        self._view_sections[section_id] = clsViewSection
         print(
-            "[TRACE TEMP][SectionManager] Section créée et enregistrée dans _sections\n"
+            "[TRACE TEMP][SectionManager] Section créée et enregistrée dans _view_sections\n"
             f"  section_id : {section_id}\n"
         )
         print("[TRACE TEMP][SectionManager] create_section() retourne section_id\n")
@@ -61,7 +61,7 @@ class CLS_SectionManager:
 
     # Return the section with this ID, or None if it does not exist.
     def get_section(self, section_id: str) -> CLS_ViewSection | None:
-        return self._sections.get(section_id)
+        return self._view_sections.get(section_id)
 
     def show_section(self, section_id: str) -> None:
         clsViewSection = self.get_section(section_id)
@@ -83,16 +83,16 @@ class CLS_SectionManager:
     # Return an existing section ID for reuse, or None if no section matches.
     # Both file name and file path must match to identify the same file.
     def find_section(self, file_name: str, file_path: str) -> str | None:
-        for section_id, clsViewSection in self._sections.items():
+        for section_id, clsViewSection in self._view_sections.items():
             if clsViewSection.file_name == file_name and clsViewSection.file_path == file_path:
                 return section_id
         return None
 
     def remove_section(self, section_id: str) -> None:
-        self._sections.pop(section_id, None)
+        self._view_sections.pop(section_id, None)
 
     def clear_sections(self) -> None:
-        self._sections.clear()
+        self._view_sections.clear()
 
     def reset(self) -> None:
         self.clear_sections()
