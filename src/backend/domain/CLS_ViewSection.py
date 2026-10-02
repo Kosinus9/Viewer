@@ -26,7 +26,7 @@ class CLS_ViewSection:
         # Return the file path.
         return self._file_path
 
-    # Prepare the section for use. Not implemented yet.
+    # Resource-neutral entry point for future internal state initialization.
     def initialize(self) -> None:
         pass
 

@@ -52,6 +52,8 @@ class CLS_SectionManager:
             file_path  = stJobSection.file_path,
         )
         self._view_sections[section_id] = clsViewSection
+        clsViewSection.initialize()
+
         print(
             "[TRACE TEMP][SectionManager] Section créée et enregistrée dans _view_sections\n"
             f"  section_id : {section_id}\n"
