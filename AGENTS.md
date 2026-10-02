@@ -25,6 +25,9 @@
    - SectionManager reste responsable de la gestion des sections.
    - Réutiliser show_section(), hide_section() et close_section().
    - Conserver actuellement file_name + file_path pour identifier les fichiers.
+   - CommandManager est responsable de construire file_name et file_path en amont lors de la création de ST_Command.
+   - ST_Command transporte explicitement file_name et file_path ; les couches suivantes les consomment tels quels.
+   - Ne pas reconstruire file_name à partir de file_path dans ViewerController, SectionManager ou une autre couche en aval.
 5. Tests
    - Ne jamais supprimer ou affaiblir un test simplement pour faire passer le code.
    - Modifier un test uniquement si le comportement attendu a réellement changé.
