@@ -20,7 +20,7 @@ class CLS_SectionManager:
     # Register a section using the ID already supplied by the Job.
     def create_section(self, stJob: ST_Job) -> str:
         print(
-            "\n[TRACE TEMP][SectionManager] ST_Job reçu dans create_section()\n"
+            "\n[TRACE TEMP][SectionManager] create_section() reçoit le ST_Job\n"
             f"  command_type : {stJob.command_type.name}\n"
             "\n  Section:\n"
             f"    section_id : {stJob.stJobSection.section_id}\n"
@@ -53,7 +53,7 @@ class CLS_SectionManager:
         )
         self._sections[section_id] = clsViewSection
         print(
-            "[TRACE TEMP][SectionManager] Section enregistree dans _sections\n"
+            "[TRACE TEMP][SectionManager] Section créée et enregistrée dans _sections\n"
             f"  section_id : {section_id}\n"
         )
         print("[TRACE TEMP][SectionManager] create_section() retourne section_id\n")

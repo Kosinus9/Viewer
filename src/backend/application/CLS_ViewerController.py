@@ -63,8 +63,16 @@ class CLS_ViewerController:
                     f"  section_id   : {stJob.stJobSection.section_id}\n"
                     f"  file_name    : {stJob.stJobSection.file_name}\n"
                     f"  file_path    : {stJob.stJobSection.file_path}\n"
+                ) 
+                print(
+                    "[TRACE TEMP][ViewerController] Transmission du ST_Job au SectionManager\n"
+                    f"  section_id : {stJob.stJobSection.section_id}\n"
                 )
-                print("[TRACE TEMP][ViewerController] Aucune transmission au SectionManager dans le flux actuel\n")
+                section_id = self._clsSectionManager.create_section(stJob)
+                print(
+                    "[TRACE TEMP][ViewerController] Retour de SectionManager.create_section()\n"
+                    f"  section_id : {section_id}\n"
+                )
         elif command_type in (E_CommandType.SHOW, E_CommandType.HIDE, E_CommandType.CLOSE):
             section_id = self._clsSectionManager.find_section(
                 stCommand.file_name, stCommand.file_path

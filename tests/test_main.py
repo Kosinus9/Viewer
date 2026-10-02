@@ -22,13 +22,13 @@ class TestMain(unittest.TestCase):
             main.main([])
 
         command_manager.assert_called_once_with()
-        section_manager, layout_manager, timer_manager = viewer_controller.call_args.args
-        self.assertIsInstance(section_manager, CLS_SectionManager)
-        self.assertIsInstance(layout_manager, CLS_LayoutManager)
+        clsSectionManager, clsLayoutManager, clsTimerLifecycleManager = viewer_controller.call_args.args
+        self.assertIsInstance(clsSectionManager, CLS_SectionManager)
+        self.assertIsInstance(clsLayoutManager, CLS_LayoutManager)
         self.platform_adapter.assert_called_once_with()
         self.platform_adapter.return_value.get_screen_dimensions.assert_called_once_with()
-        self.assertIsNotNone(layout_manager.calculate_layout())
-        self.assertIsInstance(timer_manager, CLS_TimerLifecycleManager)
+        self.assertIsNotNone(clsLayoutManager.calculate_layout())
+        self.assertIsInstance(clsTimerLifecycleManager, CLS_TimerLifecycleManager)
         command_manager.return_value.create_open_command.assert_not_called()
         viewer_controller.return_value.process_command.assert_not_called()
 
@@ -59,8 +59,8 @@ class TestMain(unittest.TestCase):
     def test_screen_dimensions_are_available_when_open_is_processed(self):
         with patch.object(main, "CLS_ViewerController") as viewer_controller:
             def process_command(command):
-                layout_manager = viewer_controller.call_args.args[1]
-                layout = layout_manager.calculate_layout()
+                clsLayoutManager = viewer_controller.call_args.args[1]
+                layout = clsLayoutManager.calculate_layout()
                 self.assertIsNotNone(layout)
                 self.assertEqual((layout.width, layout.height), (960, 540))
                 self.assertEqual((layout.position_x, layout.position_y), (480, 270))

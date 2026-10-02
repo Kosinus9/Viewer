@@ -61,4 +61,36 @@
 - Regrouper les déclarations et instanciations de classes entre elles afin de garder le code ordonné et lisible.
 - Éviter de disperser les créations d'instances au milieu d'autres traitements lorsqu'elles peuvent être regroupées.
 - Conserver un ordre cohérent et facilement identifiable pour les différents composants.
-Le principe est maintenant : ces règles permanentes vont dans AGENTS.md et je ne les recopierai plus dans chaque prompt Codex. Les futurs prompts pourront essentiellement contenir l’objectif + le comportement attendu + les particularités de l’étape.
+11. Nomenclature des classes et de leurs instances
+   - Toute classe métier ou composant utilise le préfixe `CLS_` suivi du nom en PascalCase.
+   - Exemple : `CLS_CommandManager`, `CLS_SectionManager`, `CLS_LayoutManager`.
+   - Toute instance d'une classe `CLS_*` utilise le préfixe `cls` suivi du nom de la classe en PascalCase, sans le préfixe `CLS_`.
+   - Exemple : `CLS_CommandManager` → `clsCommandManager`.
+   - Exemple : `CLS_SectionManager` → `clsSectionManager`.
+   - Exemple : `CLS_LayoutManager` → `clsLayoutManager`.
+   - Exemple : `CLS_PlatformAdapter` → `clsPlatformAdapter`.
+   - Exemple : `CLS_TimerLifecycleManager` → `clsTimerLifecycleManager`.
+   - Exemple : `CLS_ViewerController` → `clsViewerController`.
+
+12. Nomenclature des attributs et paramètres contenant des classes
+   - Un attribut privé contenant une instance d'une classe `CLS_*` utilise `_clsNomDeClasse`.
+   - Exemple : `_clsSectionManager`, `_clsLayoutManager`, `_clsTimerLifecycleManager`.
+   - Un paramètre représentant une instance d'une classe `CLS_*` utilise également `clsNomDeClasse`.
+   - Ne pas utiliser `snake_case` pour nommer une instance d'une classe `CLS_*`.
+   - Exemple incorrect : `section_manager`.
+   - Exemple correct : `clsSectionManager`.
+13. Nomenclature des structures et de leurs instances
+   - Toute structure utilise le préfixe `ST_` suivi du nom de la structure en PascalCase.
+   - Exemple : `ST_Command`, `ST_Job`, `ST_JobSection`, `ST_JobLayout`, `ST_JobLifecycle`.
+   - Toute instance d'une structure `ST_*` utilise le préfixe `st` suivi du nom de la structure en PascalCase, sans le préfixe `ST_`.
+   - Exemple : `ST_Command` → `stCommand`.
+   - Exemple : `ST_Job` → `stJob`.
+   - Exemple : `ST_JobSection` → `stJobSection`.
+   - Exemple : `ST_JobLayout` → `stJobLayout`.
+   - Exemple : `ST_JobLifecycle` → `stJobLifecycle`.
+   - Un attribut privé contenant une structure utilise `_stNomDeStructure`.
+   - Exemple : `_stJob`, `_stJobLayout`.
+   - Un paramètre représentant une structure utilise également `stNomDeStructure`.
+   - Ne pas utiliser `snake_case` pour nommer une instance d'une structure `ST_*`.
+   - Exemple incorrect : `st_job`, `job_layout`.
+   - Exemple correct : `stJob`, `stJobLayout`.
