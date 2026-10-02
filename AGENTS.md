@@ -52,4 +52,13 @@
    - Tests/vérifications exécutés.
    - Résultats.
    - Points restant éventuellement à décider.
+9. Commentaires dans le code
+- Ajouter uniquement des commentaires courts et utiles.
+- Ne pas commenter une ligne lorsque son fonctionnement est évident.
+- Ne pas répéter en commentaire ce que le code exprime déjà clairement.
+- Lorsqu'un comportement change, modifier ou supprimer les commentaires devenus obsolètes.
+10. Organisation des déclarations
+- Regrouper les déclarations et instanciations de classes entre elles afin de garder le code ordonné et lisible.
+- Éviter de disperser les créations d'instances au milieu d'autres traitements lorsqu'elles peuvent être regroupées.
+- Conserver un ordre cohérent et facilement identifiable pour les différents composants.
 Le principe est maintenant : ces règles permanentes vont dans AGENTS.md et je ne les recopierai plus dans chaque prompt Codex. Les futurs prompts pourront essentiellement contenir l’objectif + le comportement attendu + les particularités de l’étape.

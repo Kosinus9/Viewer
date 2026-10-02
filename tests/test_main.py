@@ -10,6 +10,12 @@ from src.backend.domain.DUT.ENUM.E_CommandType import E_CommandType
 
 
 class TestMain(unittest.TestCase):
+    def setUp(self):
+        platform_patch = patch.object(main, "CLS_PlatformAdapter")
+        self.platform_adapter = platform_patch.start()
+        self.addCleanup(platform_patch.stop)
+        self.platform_adapter.return_value.get_screen_dimensions.return_value = (1920, 1080)
+
     def test_start_without_file_instantiates_components_without_command(self):
         with patch.object(main, "CLS_CommandManager") as command_manager, \
                 patch.object(main, "CLS_ViewerController") as viewer_controller:
@@ -19,6 +25,9 @@ class TestMain(unittest.TestCase):
         section_manager, layout_manager, timer_manager = viewer_controller.call_args.args
         self.assertIsInstance(section_manager, CLS_SectionManager)
         self.assertIsInstance(layout_manager, CLS_LayoutManager)
+        self.platform_adapter.assert_called_once_with()
+        self.platform_adapter.return_value.get_screen_dimensions.assert_called_once_with()
+        self.assertIsNotNone(layout_manager.calculate_layout())
         self.assertIsInstance(timer_manager, CLS_TimerLifecycleManager)
         command_manager.return_value.create_open_command.assert_not_called()
         viewer_controller.return_value.process_command.assert_not_called()
@@ -46,6 +55,20 @@ class TestMain(unittest.TestCase):
         self.assertEqual(command.command_type, E_CommandType.OPEN)
         self.assertEqual(command.file_name, "example.pdf")
         self.assertEqual(command.file_path, file_path)
+
+    def test_screen_dimensions_are_available_when_open_is_processed(self):
+        with patch.object(main, "CLS_ViewerController") as viewer_controller:
+            def process_command(command):
+                layout_manager = viewer_controller.call_args.args[1]
+                layout = layout_manager.calculate_layout()
+                self.assertIsNotNone(layout)
+                self.assertEqual((layout.width, layout.height), (960, 540))
+                self.assertEqual((layout.position_x, layout.position_y), (480, 270))
+
+            viewer_controller.return_value.process_command.side_effect = process_command
+            main.main(["documents/example.pdf"])
+
+        viewer_controller.return_value.process_command.assert_called_once()
 
 
 if __name__ == "__main__":

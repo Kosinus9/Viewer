@@ -6,6 +6,7 @@ from src.backend.application.CLS_LayoutManager          import CLS_LayoutManager
 from src.backend.application.CLS_SectionManager         import CLS_SectionManager
 from src.backend.application.CLS_TimerLifecycleManager  import CLS_TimerLifecycleManager
 from src.backend.application.CLS_ViewerController       import CLS_ViewerController
+from src.backend.infrastructure.CLS_PlatformAdapter     import CLS_PlatformAdapter
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Viewer")
@@ -19,12 +20,16 @@ def main(argv: list[str] | None = None) -> None:
     command_manager          = CLS_CommandManager()
     section_manager          = CLS_SectionManager()
     layout_manager           = CLS_LayoutManager()
+    platform_adapter         = CLS_PlatformAdapter()
     timer_lifecycle_manager  = CLS_TimerLifecycleManager()
     viewer_controller        = CLS_ViewerController(
                                                     section_manager, 
                                                     layout_manager, 
                                                     timer_lifecycle_manager
     )
+
+    width, height            = platform_adapter.get_screen_dimensions()
+    layout_manager.set_screen_dimensions(width, height)
 
     if args.file_path is not None:
         print("[TRACE TEMP][main] Appel de CLS_CommandManager.create_open_command()")
