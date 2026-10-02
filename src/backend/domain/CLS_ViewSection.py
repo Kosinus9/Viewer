@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from .DUT.ENUM.E_FileType import E_FileType
+from .DUT.ENUM.E_ViewSectionState import E_ViewSectionState
 
 
 # Represent a single section managed by CLS_SectionManager.
@@ -16,6 +17,7 @@ class CLS_ViewSection:
         self._file_name:  str = file_name
         self._file_path:  str = file_path
         self._file_type:  E_FileType | None = None
+        self._state: E_ViewSectionState | None = None
 
     @property
     def section_id(self) -> str:
@@ -36,25 +38,38 @@ class CLS_ViewSection:
     def file_type(self) -> E_FileType | None:
         return self._file_type
 
+    @property
+    def state(self) -> E_ViewSectionState | None:
+        return self._state
+
     def initialize(self) -> None:
         extension = Path(self._file_path).suffix.lower()
         self._file_type = E_FileType.PDF if extension == ".pdf" else E_FileType.ERROR
+        self._state = (
+            E_ViewSectionState.LOADING if self._file_type == E_FileType.PDF
+            else E_ViewSectionState.ERROR
+        )
 
-    # Show the section. Not implemented yet.
     def show(self) -> None:
-        pass
+        if self._state == E_ViewSectionState.BACKGROUND:
+            self._state = E_ViewSectionState.VISIBLE
 
-    # Hide the section. Not implemented yet.
     def hide(self) -> None:
-        pass
+        if self._state == E_ViewSectionState.VISIBLE:
+            self._state = E_ViewSectionState.BACKGROUND
 
     # Refresh the section content. Not implemented yet.
     def refresh(self) -> None:
         pass
 
-    # Close the section. Not implemented yet.
     def close(self) -> None:
-        pass
+        if self._state in (
+            E_ViewSectionState.VISIBLE,
+            E_ViewSectionState.BACKGROUND,
+            E_ViewSectionState.ERROR,
+        ):
+            self._state = E_ViewSectionState.CLOSING
+            self._state = E_ViewSectionState.CLOSED
 
     # Return the section to its initial state. Not implemented yet.
     def reset(self) -> None:

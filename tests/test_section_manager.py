@@ -5,6 +5,7 @@ from src.backend.application.CLS_SectionManager import CLS_SectionManager
 from src.backend.domain.CLS_ViewSection import CLS_ViewSection
 from src.backend.domain.DUT.ENUM.E_CommandType import E_CommandType
 from src.backend.domain.DUT.ENUM.E_FileType import E_FileType
+from src.backend.domain.DUT.ENUM.E_ViewSectionState import E_ViewSectionState
 from src.backend.domain.DUT.STRUCT.ST_Job import ST_Job
 from src.backend.domain.DUT.STRUCT.ST_JobSection import ST_JobSection
 from src.backend.domain.DUT.STRUCT.ST_JobLayout import ST_JobLayout
@@ -46,6 +47,7 @@ class TestSectionManager(unittest.TestCase):
         self.assertEqual(clsViewSection.file_name, stJob.stJobSection.file_name)
         self.assertEqual(clsViewSection.file_path, stJob.stJobSection.file_path)
         self.assertIs(clsViewSection.file_type, E_FileType.PDF)
+        self.assertIs(clsViewSection.state, E_ViewSectionState.LOADING)
 
 
 if __name__ == "__main__":
