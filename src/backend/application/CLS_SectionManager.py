@@ -19,19 +19,44 @@ class CLS_SectionManager:
 
     # Register a section using the ID already supplied by the Job.
     def create_section(self, stJob: ST_Job) -> str:
+        print(
+            "\n[TRACE TEMP][SectionManager] ST_Job reçu dans create_section()\n"
+            f"  command_type : {stJob.command_type.name}\n"
+            "\n  Section:\n"
+            f"    section_id : {stJob.stJobSection.section_id}\n"
+            f"    file_name  : {stJob.stJobSection.file_name}\n"
+            f"    file_path  : {stJob.stJobSection.file_path}\n"
+            "\n  Layout:\n"
+            f"    position_x : {stJob.stJobLayout.position_x}\n"
+            f"    position_y : {stJob.stJobLayout.position_y}\n"
+            f"    width      : {stJob.stJobLayout.width}\n"
+            f"    height     : {stJob.stJobLayout.height}\n"
+            "\n  Lifecycle:\n"
+            f"    duration         : {stJob.stJobLifecycle.duration}\n"
+            f"    ignore_lifecycle : {stJob.stJobLifecycle.ignore_lifecycle}\n"
+        )
         stJobSection = stJob.stJobSection
         section_id   = stJobSection.section_id
         if not isinstance(section_id, str) or not section_id:
+            print("[TRACE TEMP][SectionManager] Rejet : section_id invalide")
             raise ValueError("Job requires a non-empty section_id.")
         if section_id in self._sections:
+            print("[TRACE TEMP][SectionManager] Rejet : section_id deja enregistre")
             raise ValueError("section_id is already registered.")
 
+        print("[TRACE TEMP][SectionManager] section_id accepte")
+        print("[TRACE TEMP][SectionManager] Construction de CLS_ViewSection")
         clsViewSection = CLS_ViewSection(
             section_id = section_id,
             file_name  = stJobSection.file_name,
             file_path  = stJobSection.file_path,
         )
         self._sections[section_id] = clsViewSection
+        print(
+            "[TRACE TEMP][SectionManager] Section enregistree dans _sections\n"
+            f"  section_id : {section_id}\n"
+        )
+        print("[TRACE TEMP][SectionManager] create_section() retourne section_id\n")
         return section_id
 
     # Return the section with this ID, or None if it does not exist.

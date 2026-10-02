@@ -10,5 +10,10 @@ class CLS_CommandManager:
             file_name    = Path(file_path).name,
             file_path    = file_path,
         )
-        print(f"[TRACE TEMP][CommandManager] ST_Command cree : {st_command!r}")
+        print(
+            "\n[TRACE TEMP][CommandManager] ST_Command cree\n"
+            f"  command_type : {st_command.command_type.name}\n"
+            f"  file_name    : {st_command.file_name}\n"
+            f"  file_path    : {st_command.file_path}\n"
+        )
         return st_command

@@ -40,14 +40,31 @@ class CLS_ViewerController:
         return self._clsTimerLifecycleManager
 
     def process_command(self, stCommand: ST_Command) -> None:
-        print(f"[TRACE TEMP][ViewerController] Entree dans process_command() : {stCommand!r}")
+        print(
+            "\n[TRACE TEMP][ViewerController] Entree dans process_command()\n"
+            f"  command_type : {stCommand.command_type.name}\n"
+            f"  file_name    : {stCommand.file_name}\n"
+            f"  file_path    : {stCommand.file_path}\n"
+        )
         command_type = stCommand.command_type
 
         if command_type == E_CommandType.OPEN:
             print("[TRACE TEMP][ViewerController] Branche OPEN selectionnee")
             print("[TRACE TEMP][ViewerController] Appel de create_job(stCommand)")
             stJob = self.create_job(stCommand)
-            print(f"[TRACE TEMP][ViewerController] Retour de create_job() : {stJob!r}")
+            print(
+                "\n[TRACE TEMP][ViewerController] Retour de create_job()\n"
+                f"  resultat : {'ST_Job (champs ci-dessus)' if stJob is not None else 'None'}\n"
+            )
+            if stJob is not None:
+                print(
+                    "[TRACE TEMP][ViewerController] ST_Job valide reçu\n"
+                    f"  command_type : {stJob.command_type.name}\n"
+                    f"  section_id   : {stJob.stJobSection.section_id}\n"
+                    f"  file_name    : {stJob.stJobSection.file_name}\n"
+                    f"  file_path    : {stJob.stJobSection.file_path}\n"
+                )
+                print("[TRACE TEMP][ViewerController] Aucune transmission au SectionManager dans le flux actuel\n")
         elif command_type in (E_CommandType.SHOW, E_CommandType.HIDE, E_CommandType.CLOSE):
             section_id = self._clsSectionManager.find_section(
                 stCommand.file_name, stCommand.file_path
@@ -91,7 +108,22 @@ class CLS_ViewerController:
             stJobLayout    = stJobLayout,
             stJobLifecycle = stJobLifecycle,
         )
-        print(f"[TRACE TEMP][create_job] ST_Job construit avec ses champs : {stJob!r}")
+        print(
+            "\n[TRACE TEMP][create_job] ST_Job construit\n"
+            f"  command_type : {stJob.command_type.name}\n"
+            "\n  Section:\n"
+            f"    file_name  : {stJob.stJobSection.file_name}\n"
+            f"    file_path  : {stJob.stJobSection.file_path}\n"
+            f"    section_id : {stJob.stJobSection.section_id}\n"
+            "\n  Layout:\n"
+            f"    position_x : {stJob.stJobLayout.position_x}\n"
+            f"    position_y : {stJob.stJobLayout.position_y}\n"
+            f"    width      : {stJob.stJobLayout.width}\n"
+            f"    height     : {stJob.stJobLayout.height}\n"
+            "\n  Lifecycle:\n"
+            f"    duration         : {stJob.stJobLifecycle.duration}\n"
+            f"    ignore_lifecycle : {stJob.stJobLifecycle.ignore_lifecycle}\n"
+        )
         if not self.validate_job(stJob):
             print("[TRACE TEMP][create_job] validate_job() retourne False : retour None")
             return None

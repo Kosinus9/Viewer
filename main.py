@@ -15,7 +15,7 @@ def main(argv: list[str] | None = None) -> None:
                         help  = "File to open")
                         
     args   = parser.parse_args(argv)
-    print(f"[TRACE TEMP][main] Reception de file_path={args.file_path!r}")
+    print(f"\n[TRACE TEMP][main] Reception du chemin\n  file_path : {args.file_path}\n")
 
     command_manager          = CLS_CommandManager()
     section_manager          = CLS_SectionManager()
