@@ -1,3 +1,8 @@
+from pathlib import Path
+
+from .DUT.ENUM.E_FileType import E_FileType
+
+
 # Represent a single section managed by CLS_SectionManager.
 class CLS_ViewSection:
     def __init__(
@@ -10,6 +15,7 @@ class CLS_ViewSection:
         self._section_id: str = section_id
         self._file_name:  str = file_name
         self._file_path:  str = file_path
+        self._file_type:  E_FileType | None = None
 
     @property
     def section_id(self) -> str:
@@ -26,9 +32,13 @@ class CLS_ViewSection:
         # Return the file path.
         return self._file_path
 
-    # Resource-neutral entry point for future internal state initialization.
+    @property
+    def file_type(self) -> E_FileType | None:
+        return self._file_type
+
     def initialize(self) -> None:
-        pass
+        extension = Path(self._file_path).suffix.lower()
+        self._file_type = E_FileType.PDF if extension == ".pdf" else E_FileType.ERROR
 
     # Show the section. Not implemented yet.
     def show(self) -> None:

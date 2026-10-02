@@ -4,6 +4,7 @@ from unittest.mock import patch
 from src.backend.application.CLS_SectionManager import CLS_SectionManager
 from src.backend.domain.CLS_ViewSection import CLS_ViewSection
 from src.backend.domain.DUT.ENUM.E_CommandType import E_CommandType
+from src.backend.domain.DUT.ENUM.E_FileType import E_FileType
 from src.backend.domain.DUT.STRUCT.ST_Job import ST_Job
 from src.backend.domain.DUT.STRUCT.ST_JobSection import ST_JobSection
 from src.backend.domain.DUT.STRUCT.ST_JobLayout import ST_JobLayout
@@ -24,12 +25,15 @@ class TestSectionManager(unittest.TestCase):
             stJobLifecycle=ST_JobLifecycle(),
         )
 
+        initialize_section = CLS_ViewSection.initialize
+
         def check_registration(clsViewSection):
             self.assertIsInstance(clsViewSection, CLS_ViewSection)
             self.assertIs(
                 clsSectionManager.view_sections[stJob.stJobSection.section_id],
                 clsViewSection,
             )
+            initialize_section(clsViewSection)
 
         with patch.object(CLS_ViewSection, "initialize", autospec=True, side_effect=check_registration) as initialize:
             section_id = clsSectionManager.create_section(stJob)
@@ -41,6 +45,7 @@ class TestSectionManager(unittest.TestCase):
         self.assertEqual(clsViewSection.section_id, section_id)
         self.assertEqual(clsViewSection.file_name, stJob.stJobSection.file_name)
         self.assertEqual(clsViewSection.file_path, stJob.stJobSection.file_path)
+        self.assertIs(clsViewSection.file_type, E_FileType.PDF)
 
 
 if __name__ == "__main__":
