@@ -9,7 +9,10 @@ from src.backend.application.CLS_ViewerController       import CLS_ViewerControl
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Viewer")
-    parser.add_argument("file_path", nargs="?", help="File to open")
+    parser.add_argument("file_path", 
+                        nargs = "?", 
+                        help  = "File to open")
+                        
     args   = parser.parse_args(argv)
 
     command_manager          = CLS_CommandManager()
@@ -27,8 +30,6 @@ def main(argv: list[str] | None = None) -> None:
         viewer_controller.process_command(st_command)
 
 
+
 if __name__ == "__main__":
     main()
-
-
-
