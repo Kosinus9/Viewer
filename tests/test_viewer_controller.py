@@ -2,6 +2,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import Mock, call, patch
 
+from src.backend.application.CLS_CommandManager import CLS_CommandManager
 from src.backend.application.CLS_LayoutManager import CLS_LayoutManager
 from src.backend.application.CLS_SectionManager import CLS_SectionManager
 from src.backend.application.CLS_TimerLifecycleManager import CLS_TimerLifecycleManager
@@ -19,9 +20,23 @@ class TestViewerController(unittest.TestCase):
             self.section_manager, self.layout_manager, CLS_TimerLifecycleManager()
         )
         self.file_path = str(Path("documents") / "example.pdf")
+        self.file_name = "example.pdf"
+
+    def test_command_manager_populates_file_identification(self):
+        command = CLS_CommandManager().create_open_command(self.file_path)
+        self.assertEqual(command.command_type, E_CommandType.OPEN)
+        self.assertEqual(command.file_name, self.file_name)
+        self.assertEqual(command.file_path, self.file_path)
+
+    def test_open_job_uses_explicit_command_file_name(self):
+        command = ST_Command(E_CommandType.OPEN, "explicit-name.pdf", self.file_path)
+        job = self.controller.create_job(command)
+        self.assertIsNotNone(job)
+        self.assertEqual(job.stJobSection.file_name, command.file_name)
+        self.assertEqual(job.stJobSection.file_path, command.file_path)
 
     def test_open_keeps_existing_job_flow(self):
-        command = ST_Command(E_CommandType.OPEN, self.file_path)
+        command = ST_Command(E_CommandType.OPEN, self.file_name, self.file_path)
         with patch.object(self.controller, "create_job", wraps=self.controller.create_job) as create_job:
             self.assertIsNone(self.controller.process_command(command))
             create_job.assert_called_once_with(command)
@@ -44,10 +59,10 @@ class TestViewerController(unittest.TestCase):
                 manager.find_section.return_value = "existing-section"
                 controller = CLS_ViewerController(manager, Mock(), Mock())
                 with patch.object(controller, "create_job") as create_job:
-                    controller.process_command(ST_Command(command_type, self.file_path))
+                    controller.process_command(ST_Command(command_type, "explicit-name.pdf", self.file_path))
                     create_job.assert_not_called()
                 self.assertEqual(manager.method_calls, [
-                    call.find_section("example.pdf", self.file_path),
+                    call.find_section("explicit-name.pdf", self.file_path),
                     getattr(call, method_name)("existing-section"),
                 ])
 
@@ -58,16 +73,16 @@ class TestViewerController(unittest.TestCase):
                 manager.find_section.return_value = None
                 controller = CLS_ViewerController(manager, Mock(), Mock())
                 with patch.object(controller, "create_job") as create_job:
-                    controller.process_command(ST_Command(command_type, self.file_path))
+                    controller.process_command(ST_Command(command_type, "explicit-name.pdf", self.file_path))
                     create_job.assert_not_called()
                 self.assertEqual(manager.method_calls, [
-                    call.find_section("example.pdf", self.file_path),
+                    call.find_section("explicit-name.pdf", self.file_path),
                 ])
 
     def test_file_path_selects_correct_section_and_close_removes_it(self):
-        first_job = self.controller.create_job(ST_Command(E_CommandType.OPEN, self.file_path))
+        first_job = self.controller.create_job(ST_Command(E_CommandType.OPEN, self.file_name, self.file_path))
         other_path = str(Path("other") / "example.pdf")
-        other_job = self.controller.create_job(ST_Command(E_CommandType.OPEN, other_path))
+        other_job = self.controller.create_job(ST_Command(E_CommandType.OPEN, self.file_name, other_path))
         first_id = self.section_manager.create_section(first_job)
         other_id = self.section_manager.create_section(other_job)
         section = self.section_manager.get_section(first_id)
@@ -75,9 +90,9 @@ class TestViewerController(unittest.TestCase):
 
         with patch.object(section, "show") as show, patch.object(section, "hide") as hide, \
                 patch.object(section, "close") as close, patch.object(other_section, "close") as other_close:
-            self.controller.process_command(ST_Command(E_CommandType.SHOW, self.file_path))
-            self.controller.process_command(ST_Command(E_CommandType.HIDE, self.file_path))
-            self.controller.process_command(ST_Command(E_CommandType.CLOSE, self.file_path))
+            self.controller.process_command(ST_Command(E_CommandType.SHOW, self.file_name, self.file_path))
+            self.controller.process_command(ST_Command(E_CommandType.HIDE, self.file_name, self.file_path))
+            self.controller.process_command(ST_Command(E_CommandType.CLOSE, self.file_name, self.file_path))
             show.assert_called_once_with()
             hide.assert_called_once_with()
             close.assert_called_once_with()

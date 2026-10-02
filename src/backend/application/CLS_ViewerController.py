@@ -1,4 +1,3 @@
-from pathlib                                import Path
 from uuid                                   import uuid4
 
 from .CLS_LayoutManager                     import CLS_LayoutManager
@@ -46,8 +45,9 @@ class CLS_ViewerController:
         if command_type == E_CommandType.OPEN:
             self.create_job(stCommand)
         elif command_type in (E_CommandType.SHOW, E_CommandType.HIDE, E_CommandType.CLOSE):
-            file_path = stCommand.file_path
-            section_id = self._clsSectionManager.find_section(Path(file_path).name, file_path)
+            section_id = self._clsSectionManager.find_section(
+                stCommand.file_name, stCommand.file_path
+            )
             if section_id is None:
                 return
 
@@ -65,7 +65,7 @@ class CLS_ViewerController:
         if not file_path:
             raise ValueError("OPEN requires a file_path.")
 
-        file_name      = Path(file_path).name
+        file_name      = stCommand.file_name
         section_id     = str(uuid4())
 
         stJobSection   = ST_JobSection(
