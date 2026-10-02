@@ -40,10 +40,14 @@ class CLS_ViewerController:
         return self._clsTimerLifecycleManager
 
     def process_command(self, stCommand: ST_Command) -> None:
+        print(f"[TRACE TEMP][ViewerController] Entree dans process_command() : {stCommand!r}")
         command_type = stCommand.command_type
 
         if command_type == E_CommandType.OPEN:
-            self.create_job(stCommand)
+            print("[TRACE TEMP][ViewerController] Branche OPEN selectionnee")
+            print("[TRACE TEMP][ViewerController] Appel de create_job(stCommand)")
+            stJob = self.create_job(stCommand)
+            print(f"[TRACE TEMP][ViewerController] Retour de create_job() : {stJob!r}")
         elif command_type in (E_CommandType.SHOW, E_CommandType.HIDE, E_CommandType.CLOSE):
             section_id = self._clsSectionManager.find_section(
                 stCommand.file_name, stCommand.file_path
@@ -77,6 +81,7 @@ class CLS_ViewerController:
         stJobLayout = self._clsLayoutManager.calculate_layout()
         if stJobLayout is None:
             # Screen dimensions must be supplied before calculating the layout.
+            print("[TRACE TEMP][create_job] calculate_layout() retourne None : aucun ST_Job construit")
             return None
 
         stJobLifecycle = self._clsTimerLifecycleManager.get_lifecycle()
@@ -86,8 +91,11 @@ class CLS_ViewerController:
             stJobLayout    = stJobLayout,
             stJobLifecycle = stJobLifecycle,
         )
+        print(f"[TRACE TEMP][create_job] ST_Job construit avec ses champs : {stJob!r}")
         if not self.validate_job(stJob):
+            print("[TRACE TEMP][create_job] validate_job() retourne False : retour None")
             return None
+        print("[TRACE TEMP][create_job] ST_Job valide : retour du job")
         return stJob
 
     def validate_job(self, stJob: ST_Job) -> bool:

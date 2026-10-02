@@ -14,6 +14,7 @@ def main(argv: list[str] | None = None) -> None:
                         help  = "File to open")
                         
     args   = parser.parse_args(argv)
+    print(f"[TRACE TEMP][main] Reception de file_path={args.file_path!r}")
 
     command_manager          = CLS_CommandManager()
     section_manager          = CLS_SectionManager()
@@ -26,6 +27,7 @@ def main(argv: list[str] | None = None) -> None:
     )
 
     if args.file_path is not None:
+        print("[TRACE TEMP][main] Appel de CLS_CommandManager.create_open_command()")
         st_command = command_manager.create_open_command(args.file_path)
         viewer_controller.process_command(st_command)
 

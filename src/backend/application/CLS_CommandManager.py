@@ -5,8 +5,10 @@ from pathlib                       import Path
 
 class CLS_CommandManager:
     def create_open_command(self, file_path: str) -> ST_Command:
-        return ST_Command(
+        st_command = ST_Command(
             command_type = E_CommandType.OPEN,
             file_name    = Path(file_path).name,
             file_path    = file_path,
         )
+        print(f"[TRACE TEMP][CommandManager] ST_Command cree : {st_command!r}")
+        return st_command
