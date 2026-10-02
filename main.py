@@ -1,3 +1,4 @@
+
 import argparse
 
 from src.backend.application.CLS_CommandManager         import CLS_CommandManager
@@ -5,7 +6,6 @@ from src.backend.application.CLS_LayoutManager          import CLS_LayoutManager
 from src.backend.application.CLS_SectionManager         import CLS_SectionManager
 from src.backend.application.CLS_TimerLifecycleManager  import CLS_TimerLifecycleManager
 from src.backend.application.CLS_ViewerController       import CLS_ViewerController
-
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Viewer")
@@ -29,7 +29,7 @@ def main(argv: list[str] | None = None) -> None:
         st_command = command_manager.create_open_command(args.file_path)
         viewer_controller.process_command(st_command)
 
-
-
 if __name__ == "__main__":
     main()
+
+    
