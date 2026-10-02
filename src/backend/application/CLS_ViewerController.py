@@ -45,6 +45,18 @@ class CLS_ViewerController:
 
         if command_type == E_CommandType.OPEN:
             self.create_job(stCommand)
+        elif command_type in (E_CommandType.SHOW, E_CommandType.HIDE, E_CommandType.CLOSE):
+            file_path = stCommand.file_path
+            section_id = self._clsSectionManager.find_section(Path(file_path).name, file_path)
+            if section_id is None:
+                return
+
+            if command_type == E_CommandType.SHOW:
+                self._clsSectionManager.show_section(section_id)
+            elif command_type == E_CommandType.HIDE:
+                self._clsSectionManager.hide_section(section_id)
+            elif command_type == E_CommandType.CLOSE:
+                self._clsSectionManager.close_section(section_id)
         elif command_type == E_CommandType.RESET:
             pass
 
