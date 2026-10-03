@@ -39,6 +39,7 @@ class CLS_ViewerController:
         # Give read-only access to the timer lifecycle manager.
         return self._clsTimerLifecycleManager
 
+    # Route OPEN through a Job and other section actions through their file identity.
     def process_command(self, stCommand: ST_Command) -> None:
         print(
             "\n[TRACE TEMP][ViewerController] Entree dans process_command()\n"
@@ -95,6 +96,7 @@ class CLS_ViewerController:
         elif command_type == E_CommandType.RESET:
             pass
 
+    # Build and validate an opening Job using the supplied file, layout and lifecycle.
     def create_job(self, stCommand: ST_Command) -> ST_Job | None:
         file_path = stCommand.file_path
         if not file_path:
@@ -144,6 +146,7 @@ class CLS_ViewerController:
         print("[TRACE TEMP][create_job] ST_Job valide : retour du job")
         return stJob
 
+    # Check the opening Job's section, layout and lifecycle requirements.
     def validate_job(self, stJob: ST_Job) -> bool:
         if not isinstance(stJob, ST_Job):
             return False
