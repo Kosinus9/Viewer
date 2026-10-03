@@ -13,6 +13,7 @@ class CLS_CommandManager:
         print(
             "\n[TRACE TEMP][CommandManager] ST_Command cree\n"
             f"  command_type : {st_command.command_type.name}\n"
+            "  section_id   : non attribue avant create_job()\n"
             f"  file_name    : {st_command.file_name}\n"
             f"  file_path    : {st_command.file_path}\n"
         )

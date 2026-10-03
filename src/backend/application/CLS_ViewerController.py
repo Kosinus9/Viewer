@@ -43,6 +43,7 @@ class CLS_ViewerController:
         print(
             "\n[TRACE TEMP][ViewerController] Entree dans process_command()\n"
             f"  command_type : {stCommand.command_type.name}\n"
+            "  section_id   : non attribue pour OPEN, recherche par fichier pour les autres commandes\n"
             f"  file_name    : {stCommand.file_name}\n"
             f"  file_path    : {stCommand.file_path}\n"
         )
@@ -80,6 +81,11 @@ class CLS_ViewerController:
             if section_id is None:
                 return
 
+            print(
+                "[TRACE TEMP][ViewerController] Routage de la commande\n"
+                f"  command_type : {command_type.name}\n"
+                f"  section_id   : {section_id}\n"
+            )
             if command_type == E_CommandType.SHOW:
                 self._clsSectionManager.show_section(section_id)
             elif command_type == E_CommandType.HIDE:

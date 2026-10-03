@@ -50,38 +50,52 @@ class CLS_ViewSection:
 
     # Select and retain the renderer without loading the resource.
     def initialize(self) -> None:
+        print(
+            f"[TRACE TEMP][ViewSection] initialize() section_id={self._section_id} "
+            f"file_name={self._file_name} file_path={self._file_path} state={self._state}"
+        )
         extension = Path(self._file_path).suffix.lower()
+        print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} extension={extension!r}")
         self._clsRenderer = None
 
         if extension == ".pdf":
-            self._file_type = E_FileType.PDF
+            self._file_type   = E_FileType.PDF
             self._clsRenderer = CLS_PDFRenderer()
         elif extension in (".jpg", ".jpeg", ".png", ".bmp", ".webp"):
-            self._file_type = E_FileType.IMAGE
+            self._file_type   = E_FileType.IMAGE
             self._clsRenderer = CLS_ImageRenderer()
         elif extension in (".mp4", ".avi", ".mkv", ".mov", ".webm"):
-            self._file_type = E_FileType.VIDEO
+            self._file_type   = E_FileType.VIDEO
             self._clsRenderer = CLS_VideoRenderer()
         elif extension in (".txt", ".text"):
-            self._file_type = E_FileType.TEXT
+            self._file_type   = E_FileType.TEXT
             self._clsRenderer = CLS_TextRenderer()
         else:
-            self._file_type = E_FileType.UNKNOWN
+            self._file_type   = E_FileType.UNKNOWN
 
+        print(
+            f"[TRACE TEMP][ViewSection] section_id={self._section_id} file_type={self._file_type} "
+            f"renderer={type(self._clsRenderer).__name__ if self._clsRenderer is not None else 'None'}"
+        )
         if self._file_type != E_FileType.UNKNOWN:
             self.loading()
         else:
             self.error()
+        print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} initialize() termine state={self._state}")
 
     # Allow visibility only from the background state.
     def show(self) -> None:
+        previous_state = self._state
         if self._state == E_ViewSectionState.BACKGROUND:
             self.visible()
+        print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} SHOW {previous_state} -> {self._state}")
 
     # Allow hiding only from the visible state.
     def hide(self) -> None:
+        previous_state = self._state
         if self._state == E_ViewSectionState.VISIBLE:
             self.background()
+        print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} HIDE {previous_state} -> {self._state}")
 
     # Refresh the section content. Not implemented yet.
     def refresh(self) -> None:

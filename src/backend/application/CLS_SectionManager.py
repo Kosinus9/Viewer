@@ -45,7 +45,7 @@ class CLS_SectionManager:
             raise ValueError("section_id is already registered.")
 
         print("[TRACE TEMP][SectionManager] section_id accepte")
-        print("[TRACE TEMP][SectionManager] Construction de CLS_ViewSection")
+        print(f"[TRACE TEMP][SectionManager] Construction de CLS_ViewSection : section_id={section_id}")
         clsViewSection = CLS_ViewSection(
             section_id = section_id,
             file_name  = stJobSection.file_name,
