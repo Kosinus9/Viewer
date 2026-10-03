@@ -1,7 +1,7 @@
-from pathlib import Path
+from pathlib                       import Path
 
-from .DUT.ENUM.E_FileType import E_FileType
-from .DUT.ENUM.E_ViewSectionState import E_ViewSectionState
+from .DUT.ENUM.E_FileType          import E_FileType
+from .DUT.ENUM.E_ViewSectionState  import E_ViewSectionState
 
 
 # Represent a single section managed by CLS_SectionManager.
@@ -17,7 +17,7 @@ class CLS_ViewSection:
         self._file_name:  str = file_name
         self._file_path:  str = file_path
         self._file_type:  E_FileType | None = None
-        self._state: E_ViewSectionState | None = None
+        self._state:      E_ViewSectionState | None = None
 
     @property
     def section_id(self) -> str:
