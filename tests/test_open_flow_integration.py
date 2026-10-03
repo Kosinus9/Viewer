@@ -4,6 +4,7 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from src.backend.application.CLS_CommandManager import CLS_CommandManager
+from src.backend.application.CLS_LayoutManager import CLS_LayoutManager
 from src.backend.application.CLS_SectionManager import CLS_SectionManager
 from src.backend.application.CLS_TimerLifecycleManager import CLS_TimerLifecycleManager
 from src.backend.application.CLS_ViewerController import CLS_ViewerController
@@ -19,7 +20,7 @@ from src.backend.infrastructure.renderers.CLS_TextRenderer import CLS_TextRender
 class TestOpenFlowIntegration(unittest.TestCase):
     def test_three_sections_initialize_and_route_independently(self):
         clsCommandManager = CLS_CommandManager()
-        clsSectionManager = CLS_SectionManager()
+        clsSectionManager = CLS_SectionManager(CLS_LayoutManager())
         clsTimerLifecycleManager = CLS_TimerLifecycleManager()
         clsViewerController = CLS_ViewerController(
             clsSectionManager, clsTimerLifecycleManager

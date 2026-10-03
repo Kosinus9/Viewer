@@ -1,10 +1,14 @@
-from ..domain.CLS_ViewSection   import CLS_ViewSection
-from ..domain.DUT.STRUCT.ST_Job import ST_Job
+from ..domain.CLS_ViewSection               import CLS_ViewSection
+from ..domain.DUT.STRUCT.ST_Job             import ST_Job
+from ..domain.DUT.STRUCT.ST_JobLayout       import ST_JobLayout
+from ..domain.DUT.ENUM.E_ViewSectionState   import E_ViewSectionState
+from .CLS_LayoutManager                     import CLS_LayoutManager
 
 
 # Manage active view sections and their section IDs.
 class CLS_SectionManager:
-    def __init__(self) -> None:
+    def __init__(self, clsLayoutManager: CLS_LayoutManager) -> None:
+        self._clsLayoutManager = clsLayoutManager
         # Map each section ID to its CLS_ViewSection instance.
         self._view_sections: dict[str, CLS_ViewSection] = {}
 
@@ -12,10 +16,6 @@ class CLS_SectionManager:
     def view_sections(self) -> dict[str, CLS_ViewSection]:
         # Access active CLS_ViewSection instances by their section IDs.
         return self._view_sections
-
-    # Initialization will be implemented later.
-    def initialize(self) -> None:
-        pass
 
     # Register a section using the ID already supplied by the Job.
     def create_section(self, stJob: ST_Job) -> str:
@@ -65,22 +65,43 @@ class CLS_SectionManager:
     def get_section(self, section_id: str) -> CLS_ViewSection | None:
         return self._view_sections.get(section_id)
 
+    # Delegate the show request when the section exists.
     def show_section(self, section_id: str) -> None:
         clsViewSection = self.get_section(section_id)
         if clsViewSection is not None:
             clsViewSection.show()
+            self.update_layout()
 
+    # Delegate the hide request when the section exists.
     def hide_section(self, section_id: str) -> None:
         clsViewSection = self.get_section(section_id)
         if clsViewSection is not None:
             clsViewSection.hide()
+            self.update_layout()
 
+    # Request closure, then remove the section from the registry.
     def close_section(self, section_id: str) -> None:
         clsViewSection = self.get_section(section_id)
         if clsViewSection is not None:
             clsViewSection.close()
             # Removal follows the synchronous return of close().
             self.remove_section(section_id)
+            self.update_layout()
+
+    # Only visible sections participate in layout calculation.
+    def get_number_of_active_section(self) -> int:
+        number_of_active_section = 0
+        for clsViewSection in self._view_sections.values():
+            if clsViewSection.state == E_ViewSectionState.VISIBLE:
+                number_of_active_section += 1
+        return number_of_active_section
+
+    # Calculate geometry without assigning it to sections yet.
+    def update_layout(self) -> list[ST_JobLayout] | None:
+        number_of_active_section = self.get_number_of_active_section()
+        if number_of_active_section == 0:
+            return []
+        return self._clsLayoutManager.calculate_layouts(number_of_active_section)
 
     # Return an existing section ID for reuse, or None if no section matches.
     # Both file name and file path must match to identify the same file.
@@ -90,11 +111,14 @@ class CLS_SectionManager:
                 return section_id
         return None
 
+    # Unregister a section without invoking its resource cleanup.
     def remove_section(self, section_id: str) -> None:
         self._view_sections.pop(section_id, None)
 
+    # Clear the registry without requesting individual section closures.
     def clear_sections(self) -> None:
         self._view_sections.clear()
 
+    # Reset the manager by clearing its section registry.
     def reset(self) -> None:
         self.clear_sections()

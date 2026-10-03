@@ -6,6 +6,7 @@ from unittest.mock import patch
 from uuid import UUID
 
 from src.backend.application.CLS_CommandManager import CLS_CommandManager
+from src.backend.application.CLS_LayoutManager import CLS_LayoutManager
 from src.backend.application.CLS_SectionManager import CLS_SectionManager
 from src.backend.application.CLS_TimerLifecycleManager import CLS_TimerLifecycleManager
 from src.backend.application.CLS_ViewerController import CLS_ViewerController
@@ -17,7 +18,7 @@ from src.backend.domain.DUT.STRUCT.ST_Job import ST_Job
 class TestMultiSections(unittest.TestCase):
     def test_seven_open_commands_preserve_all_sections(self):
         clsCommandManager = CLS_CommandManager()
-        clsSectionManager = CLS_SectionManager()
+        clsSectionManager = CLS_SectionManager(CLS_LayoutManager())
         clsTimerLifecycleManager = CLS_TimerLifecycleManager()
         clsViewerController = CLS_ViewerController(
             clsSectionManager, clsTimerLifecycleManager

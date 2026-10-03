@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import Mock, call, patch
 
 from src.backend.application.CLS_CommandManager import CLS_CommandManager
+from src.backend.application.CLS_LayoutManager import CLS_LayoutManager
 from src.backend.application.CLS_SectionManager import CLS_SectionManager
 from src.backend.application.CLS_TimerLifecycleManager import CLS_TimerLifecycleManager
 from src.backend.application.CLS_ViewerController import CLS_ViewerController
@@ -13,7 +14,7 @@ from src.backend.domain.DUT.STRUCT.ST_JobLayout import ST_JobLayout
 
 class TestViewerController(unittest.TestCase):
     def setUp(self):
-        self.clsSectionManager = CLS_SectionManager()
+        self.clsSectionManager = CLS_SectionManager(CLS_LayoutManager())
         self.clsTimerLifecycleManager = CLS_TimerLifecycleManager()
         self.clsViewerController = CLS_ViewerController(
             self.clsSectionManager, self.clsTimerLifecycleManager

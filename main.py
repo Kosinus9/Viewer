@@ -18,8 +18,8 @@ def main(argv: list[str] | None = None) -> None:
     print(f"\n[TRACE TEMP][main] Reception du chemin\n  file_path : {args.file_path}\n")
 
     clsCommandManager        = CLS_CommandManager()
-    clsSectionManager        = CLS_SectionManager()
     clsLayoutManager         = CLS_LayoutManager()
+    clsSectionManager        = CLS_SectionManager(clsLayoutManager)
     clsPlatformAdapter       = CLS_PlatformAdapter()
     clsTimerLifecycleManager = CLS_TimerLifecycleManager()
     clsViewerController      = CLS_ViewerController(
