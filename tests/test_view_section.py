@@ -4,10 +4,10 @@ from unittest.mock import patch
 from src.backend.domain.CLS_ViewSection import CLS_ViewSection
 from src.backend.domain.DUT.ENUM.E_FileType import E_FileType
 from src.backend.domain.DUT.ENUM.E_ViewSectionState import E_ViewSectionState
-from src.backend.infrastructure.CLS_PDFRenderer import CLS_PDFRenderer
-from src.backend.infrastructure.CLS_ImageRenderer import CLS_ImageRenderer
-from src.backend.infrastructure.CLS_VideoRenderer import CLS_VideoRenderer
-from src.backend.infrastructure.CLS_TextRenderer import CLS_TextRenderer
+from src.backend.infrastructure.renderers.CLS_PDFRenderer import CLS_PDFRenderer
+from src.backend.infrastructure.renderers.CLS_ImageRenderer import CLS_ImageRenderer
+from src.backend.infrastructure.renderers.CLS_VideoRenderer import CLS_VideoRenderer
+from src.backend.infrastructure.renderers.CLS_TextRenderer import CLS_TextRenderer
 
 
 class TestViewSection(unittest.TestCase):
