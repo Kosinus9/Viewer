@@ -3,21 +3,20 @@ from pathlib import Path
 from unittest.mock import Mock, call, patch
 
 from src.backend.application.CLS_CommandManager import CLS_CommandManager
-from src.backend.application.CLS_LayoutManager import CLS_LayoutManager
 from src.backend.application.CLS_SectionManager import CLS_SectionManager
 from src.backend.application.CLS_TimerLifecycleManager import CLS_TimerLifecycleManager
 from src.backend.application.CLS_ViewerController import CLS_ViewerController
 from src.backend.domain.DUT.ENUM.E_CommandType import E_CommandType
 from src.backend.domain.DUT.STRUCT.ST_Command import ST_Command
+from src.backend.domain.DUT.STRUCT.ST_JobLayout import ST_JobLayout
 
 
 class TestViewerController(unittest.TestCase):
     def setUp(self):
         self.clsSectionManager = CLS_SectionManager()
-        self.clsLayoutManager = CLS_LayoutManager()
-        self.clsLayoutManager.set_screen_dimensions(1920, 1080)
+        self.clsTimerLifecycleManager = CLS_TimerLifecycleManager()
         self.clsViewerController = CLS_ViewerController(
-            self.clsSectionManager, self.clsLayoutManager, CLS_TimerLifecycleManager()
+            self.clsSectionManager, self.clsTimerLifecycleManager
         )
         self.file_path = str(Path("documents") / "example.pdf")
         self.file_name = "example.pdf"
@@ -27,6 +26,25 @@ class TestViewerController(unittest.TestCase):
         self.assertEqual(command.command_type, E_CommandType.OPEN)
         self.assertEqual(command.file_name, self.file_name)
         self.assertEqual(command.file_path, self.file_path)
+
+    def test_create_job_without_layout_manager_initializes_zero_layout(self):
+        self.assertIs(self.clsViewerController.section_manager, self.clsSectionManager)
+        self.assertIs(self.clsViewerController.timer_lifecycle_manager, self.clsTimerLifecycleManager)
+        stCommand = ST_Command(E_CommandType.OPEN, self.file_name, self.file_path)
+        stJob = self.clsViewerController.create_job(stCommand)
+        self.assertIsNotNone(stJob)
+        self.assertEqual(stJob.stJobLayout, ST_JobLayout(0, 0, 0, 0))
+        self.assertTrue(self.clsViewerController.validate_job(stJob))
+
+    def test_validate_job_requires_nonnegative_integers_for_all_layout_fields(self):
+        stCommand = ST_Command(E_CommandType.OPEN, self.file_name, self.file_path)
+        stJob = self.clsViewerController.create_job(stCommand)
+        for field_name in ("position_x", "position_y", "width", "height"):
+            for value, expected_validity in ((-1, False), (0, True), (1, True), (True, False), (1.0, False), (None, False), ("0", False)):
+                with self.subTest(field=field_name, value=value):
+                    stJob.stJobLayout = ST_JobLayout(0, 0, 0, 0)
+                    setattr(stJob.stJobLayout, field_name, value)
+                    self.assertIs(self.clsViewerController.validate_job(stJob), expected_validity)
 
     def test_open_job_uses_explicit_command_file_name(self):
         command = ST_Command(E_CommandType.OPEN, "explicit-name.pdf", self.file_path)
@@ -66,12 +84,16 @@ class TestViewerController(unittest.TestCase):
         self.assertEqual(clsViewSection.file_path, job.stJobSection.file_path)
 
     def test_open_does_not_create_section_when_job_cannot_be_built_or_validated(self):
-        for file_name, layout in ((self.file_name, None), ("", self.clsLayoutManager.calculate_layout())):
-            with self.subTest(file_name=file_name, layout=layout):
-                command = ST_Command(E_CommandType.OPEN, file_name, self.file_path)
-                with patch.object(self.clsLayoutManager, "calculate_layout", return_value=layout), \
-                        patch.object(self.clsSectionManager, "create_section") as create_section:
-                    self.assertIsNone(self.clsViewerController.process_command(command))
+        stCommand = ST_Command(E_CommandType.OPEN, self.file_name, self.file_path)
+        with patch.object(self.clsViewerController, "create_job", return_value=None), \
+                patch.object(self.clsSectionManager, "create_section") as create_section:
+            self.clsViewerController.process_command(stCommand)
+            create_section.assert_not_called()
+        for file_name in ("", None):
+            with self.subTest(file_name=file_name):
+                stCommand = ST_Command(E_CommandType.OPEN, file_name, self.file_path)
+                with patch.object(self.clsSectionManager, "create_section") as create_section:
+                    self.assertIsNone(self.clsViewerController.process_command(stCommand))
                     create_section.assert_not_called()
         self.assertEqual(self.clsSectionManager.view_sections, {})
 
@@ -84,7 +106,7 @@ class TestViewerController(unittest.TestCase):
             with self.subTest(command_type=command_type):
                 clsSectionManager = Mock(spec=CLS_SectionManager)
                 clsSectionManager.find_section.return_value = "existing-section"
-                clsViewerController = CLS_ViewerController(clsSectionManager, Mock(), Mock())
+                clsViewerController = CLS_ViewerController(clsSectionManager, Mock())
                 with patch.object(clsViewerController, "create_job") as create_job:
                     clsViewerController.process_command(ST_Command(command_type, "explicit-name.pdf", self.file_path))
                     create_job.assert_not_called()
@@ -98,7 +120,7 @@ class TestViewerController(unittest.TestCase):
             with self.subTest(command_type=command_type):
                 clsSectionManager = Mock(spec=CLS_SectionManager)
                 clsSectionManager.find_section.return_value = None
-                clsViewerController = CLS_ViewerController(clsSectionManager, Mock(), Mock())
+                clsViewerController = CLS_ViewerController(clsSectionManager, Mock())
                 with patch.object(clsViewerController, "create_job") as create_job:
                     clsViewerController.process_command(ST_Command(command_type, "explicit-name.pdf", self.file_path))
                     create_job.assert_not_called()

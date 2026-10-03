@@ -17,17 +17,20 @@ class TestMain(unittest.TestCase):
         self.platform_adapter.return_value.get_screen_dimensions.return_value = (1920, 1080)
 
     def test_start_without_file_instantiates_components_without_command(self):
+        clsLayoutManager = CLS_LayoutManager()
         with patch.object(main, "CLS_CommandManager") as command_manager, \
+                patch.object(main, "CLS_LayoutManager", return_value=clsLayoutManager) as layout_manager, \
                 patch.object(main, "CLS_ViewerController") as viewer_controller:
             main.main([])
 
         command_manager.assert_called_once_with()
-        clsSectionManager, clsLayoutManager, clsTimerLifecycleManager = viewer_controller.call_args.args
+        clsSectionManager, clsTimerLifecycleManager = viewer_controller.call_args.args
         self.assertIsInstance(clsSectionManager, CLS_SectionManager)
         self.assertIsInstance(clsLayoutManager, CLS_LayoutManager)
         self.platform_adapter.assert_called_once_with()
         self.platform_adapter.return_value.get_screen_dimensions.assert_called_once_with()
-        self.assertIsNotNone(clsLayoutManager.calculate_layout())
+        layout_manager.assert_called_once_with()
+        self.assertIsNotNone(clsLayoutManager.calculate_layouts(1))
         self.assertIsInstance(clsTimerLifecycleManager, CLS_TimerLifecycleManager)
         command_manager.return_value.create_open_command.assert_not_called()
         viewer_controller.return_value.process_command.assert_not_called()
@@ -57,10 +60,11 @@ class TestMain(unittest.TestCase):
         self.assertEqual(command.file_path, file_path)
 
     def test_screen_dimensions_are_available_when_open_is_processed(self):
-        with patch.object(main, "CLS_ViewerController") as viewer_controller:
+        clsLayoutManager = CLS_LayoutManager()
+        with patch.object(main, "CLS_ViewerController") as viewer_controller, \
+                patch.object(main, "CLS_LayoutManager", return_value=clsLayoutManager):
             def process_command(command):
-                clsLayoutManager = viewer_controller.call_args.args[1]
-                layout = clsLayoutManager.calculate_layout()
+                layout = clsLayoutManager.calculate_layouts(1)[0]
                 self.assertIsNotNone(layout)
                 self.assertEqual((layout.width, layout.height), (960, 540))
                 self.assertEqual((layout.position_x, layout.position_y), (480, 270))

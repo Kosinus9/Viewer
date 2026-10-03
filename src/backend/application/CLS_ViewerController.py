@@ -1,6 +1,5 @@
 from uuid                                   import uuid4
 
-from .CLS_LayoutManager                     import CLS_LayoutManager
 from .CLS_SectionManager                    import CLS_SectionManager
 from .CLS_TimerLifecycleManager             import CLS_TimerLifecycleManager
 
@@ -16,23 +15,16 @@ class CLS_ViewerController:
     def __init__(
         self, 
         clsSectionManager         : CLS_SectionManager,
-        clsLayoutManager          : CLS_LayoutManager,
         clsTimerLifecycleManager  : CLS_TimerLifecycleManager,
     ) -> None:
         # Store the managers provided by the caller.
         self._clsSectionManager         = clsSectionManager
-        self._clsLayoutManager          = clsLayoutManager
         self._clsTimerLifecycleManager  = clsTimerLifecycleManager
 
     @property
     def section_manager(self) -> CLS_SectionManager:
         # Give read-only access to the section manager.
         return self._clsSectionManager
-
-    @property
-    def layout_manager(self) -> CLS_LayoutManager:
-        # Give read-only access to the layout manager.
-        return self._clsLayoutManager
 
     @property
     def timer_lifecycle_manager(self) -> CLS_TimerLifecycleManager:
@@ -96,7 +88,7 @@ class CLS_ViewerController:
         elif command_type == E_CommandType.RESET:
             pass
 
-    # Build and validate an opening Job using the supplied file, layout and lifecycle.
+    # Build an opening Job with an uncalculated layout and the supplied lifecycle.
     def create_job(self, stCommand: ST_Command) -> ST_Job | None:
         file_path = stCommand.file_path
         if not file_path:
@@ -111,11 +103,12 @@ class CLS_ViewerController:
             section_id = section_id,
         )
 
-        stJobLayout = self._clsLayoutManager.calculate_layout()
-        if stJobLayout is None:
-            # Screen dimensions must be supplied before calculating the layout.
-            print("[TRACE TEMP][create_job] calculate_layout() retourne None : aucun ST_Job construit")
-            return None
+        stJobLayout = ST_JobLayout(
+            position_x = 0,
+            position_y = 0,
+            width      = 0,
+            height     = 0,
+        )
 
         stJobLifecycle = self._clsTimerLifecycleManager.get_lifecycle()
         stJob = ST_Job(
@@ -173,12 +166,8 @@ class CLS_ViewerController:
             stJobLayout.width,
             stJobLayout.height,
         ):
-            if type(value) is not int:
+            if type(value) is not int or value < 0:
                 return False
-        if stJobLayout.position_x < 0 or stJobLayout.position_y < 0:
-            return False
-        if stJobLayout.width <= 0 or stJobLayout.height <= 0:
-            return False
 
         stJobLifecycle = stJob.stJobLifecycle
         if not isinstance(stJobLifecycle, ST_JobLifecycle):

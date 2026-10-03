@@ -6,7 +6,6 @@ from unittest.mock import patch
 from uuid import UUID
 
 from src.backend.application.CLS_CommandManager import CLS_CommandManager
-from src.backend.application.CLS_LayoutManager import CLS_LayoutManager
 from src.backend.application.CLS_SectionManager import CLS_SectionManager
 from src.backend.application.CLS_TimerLifecycleManager import CLS_TimerLifecycleManager
 from src.backend.application.CLS_ViewerController import CLS_ViewerController
@@ -19,12 +18,10 @@ class TestMultiSections(unittest.TestCase):
     def test_seven_open_commands_preserve_all_sections(self):
         clsCommandManager = CLS_CommandManager()
         clsSectionManager = CLS_SectionManager()
-        clsLayoutManager = CLS_LayoutManager()
         clsTimerLifecycleManager = CLS_TimerLifecycleManager()
         clsViewerController = CLS_ViewerController(
-            clsSectionManager, clsLayoutManager, clsTimerLifecycleManager
+            clsSectionManager, clsTimerLifecycleManager
         )
-        clsLayoutManager.set_screen_dimensions(1920, 1080)
         expected_sections = {}
 
         with redirect_stdout(io.StringIO()), \

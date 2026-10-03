@@ -24,7 +24,6 @@ def main(argv: list[str] | None = None) -> None:
     clsTimerLifecycleManager = CLS_TimerLifecycleManager()
     clsViewerController      = CLS_ViewerController(
                                                     clsSectionManager,
-                                                    clsLayoutManager,
                                                     clsTimerLifecycleManager
     )
 
@@ -38,5 +37,3 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
-
-    
