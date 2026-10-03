@@ -11,6 +11,7 @@ class CLS_SectionManager:
         self._clsLayoutManager = clsLayoutManager
         # Map each section ID to its CLS_ViewSection instance.
         self._view_sections: dict[str, CLS_ViewSection] = {}
+        self._stJobLayouts:  dict[str, ST_JobLayout]    = {}
 
     @property
     def view_sections(self) -> dict[str, CLS_ViewSection]:
@@ -53,6 +54,8 @@ class CLS_SectionManager:
         )
         self._view_sections[section_id] = clsViewSection
         clsViewSection.initialize()
+        if clsViewSection.state == E_ViewSectionState.LOADING:
+            self.on_section_loaded(section_id)
 
         print(
             "[TRACE TEMP][SectionManager] Section créée et enregistrée dans _view_sections\n"
@@ -65,28 +68,43 @@ class CLS_SectionManager:
     def get_section(self, section_id: str) -> CLS_ViewSection | None:
         return self._view_sections.get(section_id)
 
+    # Apply the visibility policy after successful resource loading.
+    def on_section_loaded(self, section_id: str) -> None:
+        clsViewSection = self.get_section(section_id)
+        if clsViewSection is not None and clsViewSection.state == E_ViewSectionState.LOADING:
+            clsViewSection.background()
+            self.show_section(section_id)
+
     # Delegate the show request when the section exists.
     def show_section(self, section_id: str) -> None:
         clsViewSection = self.get_section(section_id)
         if clsViewSection is not None:
+            if clsViewSection.state == E_ViewSectionState.BACKGROUND and self.get_number_of_active_section() >= 4:
+                return
+            previous_state = clsViewSection.state
             clsViewSection.show()
-            self.update_layout()
+            if clsViewSection.state != previous_state:
+                self.update_layout()
 
     # Delegate the hide request when the section exists.
     def hide_section(self, section_id: str) -> None:
         clsViewSection = self.get_section(section_id)
         if clsViewSection is not None:
+            previous_state = clsViewSection.state
             clsViewSection.hide()
-            self.update_layout()
+            if clsViewSection.state != previous_state:
+                self.update_layout()
 
     # Request closure, then remove the section from the registry.
     def close_section(self, section_id: str) -> None:
         clsViewSection = self.get_section(section_id)
         if clsViewSection is not None:
+            was_visible = clsViewSection.state == E_ViewSectionState.VISIBLE
             clsViewSection.close()
             # Removal follows the synchronous return of close().
             self.remove_section(section_id)
-            self.update_layout()
+            if was_visible:
+                self.update_layout()
 
     # Only visible sections participate in layout calculation.
     def get_number_of_active_section(self) -> int:
@@ -96,12 +114,37 @@ class CLS_SectionManager:
                 number_of_active_section += 1
         return number_of_active_section
 
-    # Calculate geometry without assigning it to sections yet.
+    # Keep the existing calculation result while updating section associations.
     def update_layout(self) -> list[ST_JobLayout] | None:
-        number_of_active_section = self.get_number_of_active_section()
+        return self._recompute_layouts_if_needed()
+
+    # Registry order determines the order of visible windows.
+    def _recompute_layouts_if_needed(self) -> list[ST_JobLayout] | None:
+        clsVisibleViewSections = [
+            clsViewSection for clsViewSection in self._view_sections.values()
+            if clsViewSection.state == E_ViewSectionState.VISIBLE
+        ]
+        number_of_active_section = len(clsVisibleViewSections)
         if number_of_active_section == 0:
+            self._map_layouts_to_visible_sections([], [])
             return []
-        return self._clsLayoutManager.calculate_layouts(number_of_active_section)
+        stJobLayouts = self._clsLayoutManager.calculate_layouts(number_of_active_section)
+        if stJobLayouts is None:
+            self._map_layouts_to_visible_sections([], [])
+            return None
+        self._map_layouts_to_visible_sections(clsVisibleViewSections, stJobLayouts)
+        return stJobLayouts
+
+    # Replace the mapping so hidden or removed sections cannot keep a layout.
+    def _map_layouts_to_visible_sections(
+        self,
+        clsVisibleViewSections: list[CLS_ViewSection],
+        stJobLayouts: list[ST_JobLayout],
+    ) -> None:
+        self._stJobLayouts = {
+            clsViewSection.section_id: stJobLayout
+            for clsViewSection, stJobLayout in zip(clsVisibleViewSections, stJobLayouts, strict=True)
+        }
 
     # Return an existing section ID for reuse, or None if no section matches.
     # Both file name and file path must match to identify the same file.
@@ -113,11 +156,15 @@ class CLS_SectionManager:
 
     # Unregister a section without invoking its resource cleanup.
     def remove_section(self, section_id: str) -> None:
-        self._view_sections.pop(section_id, None)
+        clsViewSection = self._view_sections.pop(section_id, None)
+        self._stJobLayouts.pop(section_id, None)
+        if clsViewSection is not None and clsViewSection.state == E_ViewSectionState.VISIBLE:
+            self.update_layout()
 
     # Clear the registry without requesting individual section closures.
     def clear_sections(self) -> None:
         self._view_sections.clear()
+        self._stJobLayouts.clear()
 
     # Reset the manager by clearing its section registry.
     def reset(self) -> None:

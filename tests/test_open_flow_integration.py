@@ -20,7 +20,9 @@ from src.backend.infrastructure.renderers.CLS_TextRenderer import CLS_TextRender
 class TestOpenFlowIntegration(unittest.TestCase):
     def test_three_sections_initialize_and_route_independently(self):
         clsCommandManager = CLS_CommandManager()
-        clsSectionManager = CLS_SectionManager(CLS_LayoutManager())
+        clsLayoutManager = CLS_LayoutManager()
+        clsLayoutManager.set_screen_dimensions(1920, 1080)
+        clsSectionManager = CLS_SectionManager(clsLayoutManager)
         clsTimerLifecycleManager = CLS_TimerLifecycleManager()
         clsViewerController = CLS_ViewerController(
             clsSectionManager, clsTimerLifecycleManager
@@ -60,14 +62,14 @@ class TestOpenFlowIntegration(unittest.TestCase):
                     self.assertIs(clsViewSection.state, E_ViewSectionState.ERROR)
                 else:
                     self.assertIsInstance(clsViewSection._clsRenderer, renderer_class)
-                    self.assertIs(clsViewSection.state, E_ViewSectionState.LOADING)
+                    self.assertIs(clsViewSection.state, E_ViewSectionState.VISIBLE)
                 sections[label] = clsViewSection
                 renderers[label] = clsViewSection._clsRenderer
                 self.assertEqual(len(clsSectionManager.view_sections), len(sections))
                 for previous_label, clsExistingViewSection in sections.items():
                     self.assertIs(clsSectionManager.get_section(clsExistingViewSection.section_id), clsExistingViewSection)
                     self.assertIs(clsExistingViewSection._clsRenderer, renderers[previous_label])
-                    expected_state = E_ViewSectionState.ERROR if previous_label == "C" else E_ViewSectionState.LOADING
+                    expected_state = E_ViewSectionState.ERROR if previous_label == "C" else E_ViewSectionState.VISIBLE
                     self.assertIs(clsExistingViewSection.state, expected_state)
             self.assertEqual(initialize.call_count, 3)
             self.assertEqual([entry.args[0] for entry in initialize.call_args_list], list(sections.values()))
@@ -80,11 +82,10 @@ class TestOpenFlowIntegration(unittest.TestCase):
 
         route("A", E_CommandType.SHOW)
         route("B", E_CommandType.HIDE)
-        self.assertIs(sections["A"].state, E_ViewSectionState.LOADING)
-        self.assertIs(sections["B"].state, E_ViewSectionState.LOADING)
-        print("[TRACE TEMP][Integration] Chargement reussi, politique de visibilite absente : preparation manuelle via background() pour A et visible() pour B")
-        sections["A"].background()
-        sections["B"].visible()
+        self.assertIs(sections["A"].state, E_ViewSectionState.VISIBLE)
+        self.assertIs(sections["B"].state, E_ViewSectionState.BACKGROUND)
+        print("[TRACE TEMP][Integration] Chargement reussi : VISIBLE automatiquement, puis HIDE de B")
+        route("B", E_CommandType.SHOW)
         route("A", E_CommandType.SHOW)
         self.assertIs(sections["A"].state, E_ViewSectionState.VISIBLE)
         self.assertIs(sections["B"].state, E_ViewSectionState.VISIBLE)
