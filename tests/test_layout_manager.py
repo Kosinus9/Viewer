@@ -13,6 +13,8 @@ class TestLayoutManager(unittest.TestCase):
 
     def assert_valid_zones(self, stJobLayouts, width, height):
         for stJobLayout in stJobLayouts:
+            self.assertEqual(stJobLayout.width, stJobLayouts[0].width)
+            self.assertEqual(stJobLayout.height, stJobLayouts[0].height)
             self.assertIsInstance(stJobLayout, ST_JobLayout)
             self.assertGreater(stJobLayout.width, 0)
             self.assertGreater(stJobLayout.height, 0)
@@ -32,14 +34,38 @@ class TestLayoutManager(unittest.TestCase):
         for number_of_active_section, expected in (
             (1, [(480, 270, 960, 540)]),
             (2, [(0, 0, 960, 1080), (960, 0, 960, 1080)]),
-            (3, [(0, 0, 960, 540), (960, 0, 960, 540), (0, 540, 1920, 540)]),
+            (3, [(0, 0, 960, 540), (960, 0, 960, 540), (480, 540, 960, 540)]),
             (4, [(0, 0, 960, 540), (960, 0, 960, 540), (0, 540, 960, 540), (960, 540, 960, 540)]),
         ):
             with self.subTest(number_of_active_section=number_of_active_section):
                 stJobLayouts = self.clsLayoutManager.calculate_layouts(number_of_active_section)
+                print(
+                    "\n" + "=" * 50 + "\n"
+                    f"TEST LAYOUT : {number_of_active_section} SECTIONS\n"
+                    "Screen : 1920 x 1080\n"
+                    f"number_of_active_section : {number_of_active_section}\n"
+                    f"Nombre de layouts : {len(stJobLayouts)}"
+                )
+                for section_number, stJobLayout in enumerate(stJobLayouts, start=1):
+                    print(
+                        f"\nSection {section_number}\n"
+                        f"  position_x : {stJobLayout.position_x}\n"
+                        f"  position_y : {stJobLayout.position_y}\n"
+                        f"  width      : {stJobLayout.width}\n"
+                        f"  height     : {stJobLayout.height}"
+                    )
                 self.assertEqual(len(stJobLayouts), number_of_active_section)
                 self.assertEqual(stJobLayouts, [ST_JobLayout(*values) for values in expected])
                 self.assert_valid_zones(stJobLayouts, 1920, 1080)
+                print("\nResultat :\n- nombre et coordonnees : OK\n- memes dimensions : OK\n- limites et absence de chevauchement : OK")
+                if number_of_active_section == 1:
+                    self.assertEqual(stJobLayouts[0].position_x, (1920 - stJobLayouts[0].width) // 2)
+                    self.assertEqual(stJobLayouts[0].position_y, (1080 - stJobLayouts[0].height) // 2)
+                    print("- fenetre centree : OK")
+                elif number_of_active_section == 3:
+                    self.assertEqual(stJobLayouts[2].position_x, (1920 - stJobLayouts[2].width) // 2)
+                    print("- section 3 centree horizontalement : OK")
+                print("=" * 50)
 
     def test_invalid_section_counts(self):
         for number_of_active_section in (-1, 0, 5, 100, True, False, 1.0, "3", None):
@@ -59,22 +85,38 @@ class TestLayoutManager(unittest.TestCase):
         stThreeJobLayouts = self.clsLayoutManager.calculate_layouts(3)
         self.assertEqual(stThreeJobLayouts, [
             ST_JobLayout(0, 0, 960, 540), ST_JobLayout(960, 0, 960, 540),
-            ST_JobLayout(0, 540, 1920, 540),
+            ST_JobLayout(480, 540, 960, 540),
         ])
         self.clsLayoutManager.set_screen_dimensions(800, 600)
         self.assertEqual(self.clsLayoutManager.calculate_layouts(2), [
             ST_JobLayout(0, 0, 400, 600), ST_JobLayout(400, 0, 400, 600),
         ])
 
-    def test_odd_dimensions_cover_screen_without_overlap(self):
+    def test_odd_dimensions_preserve_equal_sizes_without_overlap(self):
         self.clsLayoutManager.set_screen_dimensions(1919, 1079)
         for number_of_active_section in (2, 3, 4):
             stJobLayouts = self.clsLayoutManager.calculate_layouts(number_of_active_section)
             self.assert_valid_zones(stJobLayouts, 1919, 1079)
-            self.assertEqual(sum(stJobLayout.width * stJobLayout.height for stJobLayout in stJobLayouts), 1919 * 1079)
             self.assertEqual(stJobLayouts[0].width, 959)
-            self.assertEqual(stJobLayouts[1].width, 960)
-        self.assertEqual(stJobLayouts[-1], ST_JobLayout(959, 539, 960, 540))
+            expected_height = 1079 if number_of_active_section == 2 else 539
+            for stJobLayout in stJobLayouts:
+                self.assertEqual(stJobLayout.width, 959)
+                self.assertEqual(stJobLayout.height, expected_height)
+            self.assertEqual(sum(stJobLayout.width * stJobLayout.height for stJobLayout in stJobLayouts), number_of_active_section * 959 * expected_height)
+        self.assertEqual(stJobLayouts[-1], ST_JobLayout(959, 539, 959, 539))
+
+    def test_third_section_is_centered_below_first_two(self):
+        for screen_width, screen_height in ((1920, 1080), (1919, 1079), (800, 600)):
+            with self.subTest(screen_width=screen_width, screen_height=screen_height):
+                self.clsLayoutManager.set_screen_dimensions(screen_width, screen_height)
+                stJobLayouts = self.clsLayoutManager.calculate_layouts(3)
+                stThirdJobLayout = stJobLayouts[2]
+                self.assertEqual(stThirdJobLayout.position_x, (screen_width - stThirdJobLayout.width) // 2)
+                for stTopJobLayout in stJobLayouts[:2]:
+                    self.assertEqual(stThirdJobLayout.width, stTopJobLayout.width)
+                    self.assertEqual(stThirdJobLayout.height, stTopJobLayout.height)
+                    self.assertGreaterEqual(stThirdJobLayout.position_y, stTopJobLayout.position_y + stTopJobLayout.height)
+                self.assert_valid_zones(stJobLayouts, screen_width, screen_height)
 
     def test_single_section_preserves_configured_ratios_and_legacy_api(self):
         clsConfigurationManager = CLS_ConfigurationManager(0.75, 0.25)

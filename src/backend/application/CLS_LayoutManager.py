@@ -4,6 +4,7 @@ from ..infrastructure.CLS_ConfigurationManager import CLS_ConfigurationManager
 
 # Manage the arrangement of view sections in the viewer.
 class CLS_LayoutManager:
+    # Store the configuration and prepare unset screen and layout values.
     def __init__(
         self,
         clsConfigurationManager: CLS_ConfigurationManager | None = None,
@@ -35,6 +36,7 @@ class CLS_LayoutManager:
         self._screen_height  = screen_height
         self._current_layout = None
 
+    # Calculate and store a centered single-window layout using configured ratios.
     def calculate_layout(self) -> ST_JobLayout | None:
         if self._screen_width is None or self._screen_height is None:
             return None
@@ -53,7 +55,7 @@ class CLS_LayoutManager:
         )
         return self._current_layout
 
-    # Recompute all zones; odd pixels belong to the right and bottom zones.
+    # Use common dimensions; odd screen pixels remain outside the windows.
     def calculate_layouts(self, number_of_active_section: int) -> list[ST_JobLayout] | None:
         if type(number_of_active_section) is not int or not 1 <= number_of_active_section <= 4:
             raise ValueError("number_of_active_section must be an integer between 1 and 4.")
@@ -63,34 +65,32 @@ class CLS_LayoutManager:
             stJobLayout = self.calculate_layout()
             return [stJobLayout]
 
-        left_width    = self._screen_width // 2
-        right_width   = self._screen_width - left_width
-        
-        if left_width == 0:
+        width = self._screen_width // 2
+        height = self._screen_height if number_of_active_section == 2 else self._screen_height // 2
+        if width == 0:
             raise ValueError("Screen width is too small to split into two zones.")
+        if height == 0:
+            raise ValueError("Screen height is too small to split into two zones.")
         if number_of_active_section == 2:
             return [
-                ST_JobLayout(0, 0, left_width, self._screen_height),
-                ST_JobLayout(left_width, 0, right_width, self._screen_height),
+                ST_JobLayout(0, 0, width, height),
+                ST_JobLayout(width, 0, width, height),
             ]
 
-        top_height = self._screen_height // 2
-        bottom_height = self._screen_height - top_height
-        if top_height == 0:
-            raise ValueError("Screen height is too small to split into two zones.")
         stJobLayouts = [
-            ST_JobLayout(0, 0, left_width, top_height),
-            ST_JobLayout(left_width, 0, right_width, top_height),
+            ST_JobLayout(0, 0, width, height),
+            ST_JobLayout(width, 0, width, height),
         ]
         if number_of_active_section == 3:
-            stJobLayouts.append(ST_JobLayout(0, top_height, self._screen_width, bottom_height))
+            stJobLayouts.append(ST_JobLayout((self._screen_width - width) // 2, height, width, height))
         else:
             stJobLayouts.extend([
-                ST_JobLayout(0, top_height, left_width, bottom_height),
-                ST_JobLayout(left_width, top_height, right_width, bottom_height),
+                ST_JobLayout(0, height, width, height),
+                ST_JobLayout(width, height, width, height),
             ])
         return stJobLayouts
 
+    # Store the supplied geometry as the current single-window layout.
     def set_layout(
         self,
         position_x: int,
@@ -105,14 +105,18 @@ class CLS_LayoutManager:
             height           = height,
         )
 
+    # Retrieve the current layout without recalculating its geometry.
     def get_layout(self) -> ST_JobLayout | None:
         return self._current_layout
 
+    # Layout updates are not implemented yet.
     def update_layout(self) -> None:
         pass
 
+    # Clearing the current layout is not implemented yet.
     def reset_layout(self) -> None:
         pass
 
+    # Resetting the manager is not implemented yet.
     def reset(self) -> None:
         pass
