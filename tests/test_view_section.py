@@ -7,6 +7,7 @@ from src.backend.domain.DUT.ENUM.E_ViewSectionState import E_ViewSectionState
 from src.backend.infrastructure.CLS_PDFRenderer import CLS_PDFRenderer
 from src.backend.infrastructure.CLS_ImageRenderer import CLS_ImageRenderer
 from src.backend.infrastructure.CLS_VideoRenderer import CLS_VideoRenderer
+from src.backend.infrastructure.CLS_TextRenderer import CLS_TextRenderer
 
 
 class TestViewSection(unittest.TestCase):
@@ -21,6 +22,7 @@ class TestViewSection(unittest.TestCase):
             ((".pdf",), E_FileType.PDF, CLS_PDFRenderer),
             ((".jpg", ".jpeg", ".png", ".bmp", ".webp"), E_FileType.IMAGE, CLS_ImageRenderer),
             ((".mp4", ".avi", ".mkv", ".mov", ".webm"), E_FileType.VIDEO, CLS_VideoRenderer),
+            ((".txt", ".text"), E_FileType.TEXT, CLS_TextRenderer),
         ):
             for extension in extensions:
                 for suffix in (extension, extension.upper()):
@@ -48,7 +50,7 @@ class TestViewSection(unittest.TestCase):
             ("documents/document.pdf", E_FileType.PDF),
             ("documents/document.PDF", E_FileType.PDF),
             ("documents/document", E_FileType.UNKNOWN),
-            ("documents/document.txt", E_FileType.UNKNOWN),
+            ("documents/document.txt", E_FileType.TEXT),
             ("documents/document.xyz", E_FileType.UNKNOWN),
         ):
             with self.subTest(file_path=file_path):
@@ -57,7 +59,7 @@ class TestViewSection(unittest.TestCase):
                 self.assertIs(clsViewSection.file_type, expected_type)
                 self.assertIs(
                     clsViewSection.state,
-                    E_ViewSectionState.LOADING if expected_type == E_FileType.PDF
+                    E_ViewSectionState.LOADING if expected_type != E_FileType.UNKNOWN
                     else E_ViewSectionState.ERROR,
                 )
 
@@ -95,7 +97,7 @@ class TestViewSection(unittest.TestCase):
                     self.assertIs(clsViewSection.state, initial_state)
 
     def test_initialize_unsupported_file_calls_error(self):
-        clsViewSection = CLS_ViewSection("section-1", "document.txt", "documents/document.txt")
+        clsViewSection = CLS_ViewSection("section-1", "document.xyz", "documents/document.xyz")
         with patch.object(clsViewSection, "error") as error:
             clsViewSection.initialize()
             error.assert_called_once_with()

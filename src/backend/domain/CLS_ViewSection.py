@@ -5,6 +5,7 @@ from .DUT.ENUM.E_ViewSectionState       import E_ViewSectionState
 from ..infrastructure.CLS_PDFRenderer   import CLS_PDFRenderer
 from ..infrastructure.CLS_ImageRenderer import CLS_ImageRenderer
 from ..infrastructure.CLS_VideoRenderer import CLS_VideoRenderer
+from ..infrastructure.CLS_TextRenderer  import CLS_TextRenderer
 
 
 # Represent a single section managed by CLS_SectionManager.
@@ -21,7 +22,7 @@ class CLS_ViewSection:
         self._file_path:     str = file_path
         self._file_type:     E_FileType | None = None
         self._state:         E_ViewSectionState | None = None
-        self._clsRenderer:   CLS_PDFRenderer | CLS_ImageRenderer | CLS_VideoRenderer | None = None
+        self._clsRenderer:   CLS_PDFRenderer | CLS_ImageRenderer | CLS_VideoRenderer | CLS_TextRenderer | None = None
 
     @property
     def section_id(self) -> str:
@@ -62,6 +63,9 @@ class CLS_ViewSection:
         elif extension in (".mp4", ".avi", ".mkv", ".mov", ".webm"):
             self._file_type = E_FileType.VIDEO
             self._clsRenderer = CLS_VideoRenderer()
+        elif extension in (".txt", ".text"):
+            self._file_type = E_FileType.TEXT
+            self._clsRenderer = CLS_TextRenderer()
         else:
             self._file_type = E_FileType.UNKNOWN
 

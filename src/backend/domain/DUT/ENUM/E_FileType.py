@@ -6,4 +6,5 @@ class E_FileType(Enum):
     PDF     = "pdf"
     IMAGE   = "image"
     VIDEO   = "video"
+    TEXT    = "text"
     TEST    = "test"
