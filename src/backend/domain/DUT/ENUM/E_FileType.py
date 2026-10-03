@@ -2,5 +2,8 @@ from enum import Enum
 
 
 class E_FileType(Enum):
-    PDF   = "pdf"
-    ERROR = "error"
+    UNKNOWN = "unknown"
+    PDF     = "pdf"
+    IMAGE   = "image"
+    VIDEO   = "video"
+    TEST    = "test"
