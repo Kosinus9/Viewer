@@ -11,6 +11,12 @@ from src.backend.infrastructure.renderers.CLS_TextRenderer import CLS_TextRender
 
 
 class TestViewSection(unittest.TestCase):
+    def setUp(self):
+        for renderer_class in (CLS_PDFRenderer, CLS_ImageRenderer, CLS_VideoRenderer, CLS_TextRenderer):
+            patcher = patch.object(renderer_class, "load", return_value=True)
+            patcher.start()
+            self.addCleanup(patcher.stop)
+
     def test_file_type_is_undetermined_before_initialization(self):
         clsViewSection = CLS_ViewSection("section-1", "document.pdf", "documents/document.pdf")
         self.assertIsNone(clsViewSection.file_type)
@@ -106,10 +112,46 @@ class TestViewSection(unittest.TestCase):
 
     def test_state_methods_enter_corresponding_states(self):
         clsViewSection = CLS_ViewSection("section-1", "document.pdf", "documents/document.pdf")
+        clsViewSection.initialize()
         for state in E_ViewSectionState:
             with self.subTest(state=state):
                 getattr(clsViewSection, state.value)()
                 self.assertIs(clsViewSection.state, state)
+
+    def test_loading_delegates_once_to_selected_renderer_while_loading(self):
+        self.doCleanups()
+        for suffix, renderer_class in (
+            (".pdf", CLS_PDFRenderer), (".png", CLS_ImageRenderer),
+            (".mp4", CLS_VideoRenderer), (".txt", CLS_TextRenderer),
+        ):
+            for loading_success in (True, False):
+                with self.subTest(suffix=suffix, loading_success=loading_success):
+                    file_path = "documents/resource" + suffix
+                    clsViewSection = CLS_ViewSection("section-1", "original-name", file_path)
+
+                    def observe_load(clsRenderer, received_path):
+                        self.assertIs(clsViewSection.state, E_ViewSectionState.LOADING)
+                        self.assertIs(clsViewSection._clsRenderer, clsRenderer)
+                        self.assertEqual(received_path, file_path)
+                        return loading_success
+
+                    with patch.object(renderer_class, "load", autospec=True, side_effect=observe_load) as load:
+                        clsViewSection.initialize()
+                        load.assert_called_once_with(clsViewSection._clsRenderer, file_path)
+                    expected_state = E_ViewSectionState.LOADING if loading_success else E_ViewSectionState.ERROR
+                    self.assertIs(clsViewSection.state, expected_state)
+
+    def test_loading_without_renderer_enters_error(self):
+        clsViewSection = CLS_ViewSection("section-1", "document.pdf", "documents/document.pdf")
+        clsViewSection.loading()
+        self.assertIs(clsViewSection.state, E_ViewSectionState.ERROR)
+
+    def test_unknown_format_does_not_load_any_renderer(self):
+        clsViewSection = CLS_ViewSection("section-1", "document.xyz", "documents/document.xyz")
+        clsViewSection.initialize()
+        for renderer_class in (CLS_PDFRenderer, CLS_ImageRenderer, CLS_VideoRenderer, CLS_TextRenderer):
+            renderer_class.load.assert_not_called()
+        self.assertIs(clsViewSection.state, E_ViewSectionState.ERROR)
 
     def test_undefined_transitions_preserve_state(self):
         allowed_states = {

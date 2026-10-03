@@ -36,7 +36,8 @@ class TestSectionManager(unittest.TestCase):
             )
             initialize_section(clsViewSection)
 
-        with patch.object(CLS_ViewSection, "initialize", autospec=True, side_effect=check_registration) as initialize:
+        with patch.object(CLS_ViewSection, "initialize", autospec=True, side_effect=check_registration) as initialize, \
+                patch("src.backend.infrastructure.renderers.CLS_PDFRenderer.CLS_PDFRenderer.load", return_value=True):
             section_id = clsSectionManager.create_section(stJob)
             clsViewSection = clsSectionManager.get_section(section_id)
             initialize.assert_called_once_with(clsViewSection)

@@ -48,7 +48,7 @@ class CLS_ViewSection:
         # Expose the current state without allowing external changes.
         return self._state
 
-    # Select and retain the renderer without loading the resource.
+    # Select and retain the renderer before delegating resource loading.
     def initialize(self) -> None:
         print(
             f"[TRACE TEMP][ViewSection] initialize() section_id={self._section_id} "
@@ -110,9 +110,16 @@ class CLS_ViewSection:
         ):
             self.closing()
 
-    # Loading state entry; resource loading is not implemented yet.
+    # A successful load stays here until the visibility policy is defined.
     def loading(self) -> None:
         self._state = E_ViewSectionState.LOADING
+        if self._clsRenderer is None:
+            self.error()
+            return
+        loading_success = self._clsRenderer.load(self._file_path)
+        print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} load() success={loading_success}")
+        if not loading_success:
+            self.error()
 
     # Visible state entry; window display is not implemented yet.
     def visible(self) -> None:
