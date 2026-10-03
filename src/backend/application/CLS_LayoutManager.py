@@ -53,6 +53,44 @@ class CLS_LayoutManager:
         )
         return self._current_layout
 
+    # Recompute all zones; odd pixels belong to the right and bottom zones.
+    def calculate_layouts(self, number_of_active_section: int) -> list[ST_JobLayout] | None:
+        if type(number_of_active_section) is not int or not 1 <= number_of_active_section <= 4:
+            raise ValueError("number_of_active_section must be an integer between 1 and 4.")
+        if self._screen_width is None or self._screen_height is None:
+            return None
+        if number_of_active_section == 1:
+            stJobLayout = self.calculate_layout()
+            return [stJobLayout]
+
+        left_width    = self._screen_width // 2
+        right_width   = self._screen_width - left_width
+        
+        if left_width == 0:
+            raise ValueError("Screen width is too small to split into two zones.")
+        if number_of_active_section == 2:
+            return [
+                ST_JobLayout(0, 0, left_width, self._screen_height),
+                ST_JobLayout(left_width, 0, right_width, self._screen_height),
+            ]
+
+        top_height = self._screen_height // 2
+        bottom_height = self._screen_height - top_height
+        if top_height == 0:
+            raise ValueError("Screen height is too small to split into two zones.")
+        stJobLayouts = [
+            ST_JobLayout(0, 0, left_width, top_height),
+            ST_JobLayout(left_width, 0, right_width, top_height),
+        ]
+        if number_of_active_section == 3:
+            stJobLayouts.append(ST_JobLayout(0, top_height, self._screen_width, bottom_height))
+        else:
+            stJobLayouts.extend([
+                ST_JobLayout(0, top_height, left_width, bottom_height),
+                ST_JobLayout(left_width, top_height, right_width, bottom_height),
+            ])
+        return stJobLayouts
+
     def set_layout(
         self,
         position_x: int,
