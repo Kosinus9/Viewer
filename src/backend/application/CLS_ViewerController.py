@@ -192,23 +192,3 @@ class CLS_ViewerController:
                 return False
 
         return True
-
-    # Prepare the backend for use. Not implemented yet.
-    def initialize(self) -> None:
-        pass
-
-    # Start backend activity. Not implemented yet.
-    def start(self) -> None:
-        pass
-
-    # Stop backend activity. Not implemented yet.
-    def stop(self) -> None:
-        pass
-
-    # Return the backend to its initial state. Not implemented yet.
-    def reset(self) -> None:
-        pass
-
-    # Close the backend and release resources. Not implemented yet.
-    def shutdown(self) -> None:
-        pass
