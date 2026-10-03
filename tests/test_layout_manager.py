@@ -77,7 +77,6 @@ class TestLayoutManager(unittest.TestCase):
         clsLayoutManager = CLS_LayoutManager()
         for number_of_active_section in range(1, 5):
             self.assertIsNone(clsLayoutManager.calculate_layouts(number_of_active_section))
-        self.assertIsNone(clsLayoutManager.calculate_layout())
 
     def test_recalculates_after_four_sections_and_screen_change(self):
         stFourJobLayouts = self.clsLayoutManager.calculate_layouts(4)
@@ -118,12 +117,11 @@ class TestLayoutManager(unittest.TestCase):
                     self.assertGreaterEqual(stThirdJobLayout.position_y, stTopJobLayout.position_y + stTopJobLayout.height)
                 self.assert_valid_zones(stJobLayouts, screen_width, screen_height)
 
-    def test_single_section_preserves_configured_ratios_and_legacy_api(self):
+    def test_single_section_preserves_configured_ratios_and_centering(self):
         clsConfigurationManager = CLS_ConfigurationManager(0.75, 0.25)
         clsLayoutManager = CLS_LayoutManager(clsConfigurationManager)
         clsLayoutManager.set_screen_dimensions(800, 600)
         self.assertEqual(clsLayoutManager.calculate_layouts(1), [ST_JobLayout(100, 225, 600, 150)])
-        self.assertEqual(clsLayoutManager.calculate_layout(), ST_JobLayout(100, 225, 600, 150))
 
     def test_screen_too_small_for_required_split(self):
         self.clsLayoutManager.set_screen_dimensions(1, 1)
