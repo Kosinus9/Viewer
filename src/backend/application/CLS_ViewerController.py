@@ -25,7 +25,7 @@ class CLS_ViewerController:
     def section_manager(self) -> CLS_SectionManager:
         # Give read-only access to the section manager.
         return self._clsSectionManager
-
+        
     @property
     def timer_lifecycle_manager(self) -> CLS_TimerLifecycleManager:
         # Give read-only access to the timer lifecycle manager.

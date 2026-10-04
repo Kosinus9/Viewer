@@ -2,6 +2,7 @@ import unittest
 
 from src.backend.domain.DUT.ENUM.E_FileType import E_FileType
 from src.backend.domain.DUT.STRUCT.ST_BackendToFrontendData import ST_BackendToFrontendData
+from src.backend.domain.DUT.STRUCT.ST_FrontendToBackendData import ST_FrontendToBackendData
 from src.backend.domain.DUT.STRUCT.ST_JobLayout import ST_JobLayout
 from src.backend.infrastructure.CLS_FrontendBridge import CLS_FrontendBridge
 
@@ -11,6 +12,48 @@ class TestFrontendBridge(unittest.TestCase):
         self.clsFrontendBridge = CLS_FrontendBridge()
 
     def test_initial_data_is_empty(self):
+        self.assertEqual(self.clsFrontendBridge.get_backend_to_frontend_data(), [])
+
+    def test_initial_frontend_data_is_absent(self):
+        self.assertIsNone(self.clsFrontendBridge.get_frontend_to_backend_data())
+
+    def test_receives_frontend_structure_and_preserves_data(self):
+        stFrontendToBackendData = ST_FrontendToBackendData("section-1", "CLOSE")
+        self.clsFrontendBridge.set_frontend_to_backend_data(stFrontendToBackendData)
+        self.assertIs(self.clsFrontendBridge.get_frontend_to_backend_data(), stFrontendToBackendData)
+        self.assertEqual(stFrontendToBackendData.section_id, "section-1")
+        self.assertEqual(stFrontendToBackendData.event, "CLOSE")
+        self.assertIs(self.clsFrontendBridge.get_frontend_to_backend_data(), stFrontendToBackendData)
+
+    def test_new_frontend_data_replaces_previous_data(self):
+        stPreviousData = ST_FrontendToBackendData("previous", "HIDE")
+        stNewData = ST_FrontendToBackendData("new", "SHOW")
+        self.clsFrontendBridge.set_frontend_to_backend_data(stPreviousData)
+        self.clsFrontendBridge.set_frontend_to_backend_data(stNewData)
+        self.assertIs(self.clsFrontendBridge.get_frontend_to_backend_data(), stNewData)
+        self.assertEqual(stPreviousData.event, "HIDE")
+
+    def test_frontend_events_are_transported_without_interpretation(self):
+        for event in ("CLOSE", "SHOW", "HIDE", "OPEN", "unknown-event", ""):
+            with self.subTest(event=event):
+                stFrontendToBackendData = ST_FrontendToBackendData("unregistered-section", event)
+                self.clsFrontendBridge.set_frontend_to_backend_data(stFrontendToBackendData)
+                self.assertIs(self.clsFrontendBridge.get_frontend_to_backend_data(), stFrontendToBackendData)
+                self.assertEqual(stFrontendToBackendData.section_id, "unregistered-section")
+                self.assertEqual(stFrontendToBackendData.event, event)
+                self.assertEqual(self.clsFrontendBridge.get_backend_to_frontend_data(), [])
+
+    def test_directions_remain_independent(self):
+        stBackendToFrontendData = ST_BackendToFrontendData(
+            E_FileType.TEXT, "section-1", "a.txt", "a.txt", ST_JobLayout(0, 0, 960, 540)
+        )
+        stFrontendToBackendData = ST_FrontendToBackendData("section-1", "CLOSE")
+        self.clsFrontendBridge.set_backend_to_frontend_data([stBackendToFrontendData])
+        self.assertIsNone(self.clsFrontendBridge.get_frontend_to_backend_data())
+        self.clsFrontendBridge.set_frontend_to_backend_data(stFrontendToBackendData)
+        self.assertIs(self.clsFrontendBridge.get_backend_to_frontend_data()[0], stBackendToFrontendData)
+        self.clsFrontendBridge.set_backend_to_frontend_data([])
+        self.assertIs(self.clsFrontendBridge.get_frontend_to_backend_data(), stFrontendToBackendData)
         self.assertEqual(self.clsFrontendBridge.get_backend_to_frontend_data(), [])
 
     def test_receives_one_structure_and_preserves_data(self):
