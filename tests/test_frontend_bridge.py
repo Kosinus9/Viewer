@@ -14,6 +14,34 @@ class TestFrontendBridge(unittest.TestCase):
     def test_initial_data_is_empty(self):
         self.assertEqual(self.clsFrontendBridge.get_backend_to_frontend_data(), [])
 
+    def test_receive_event_without_callback_preserves_structure(self):
+        stFrontendToBackendData = ST_FrontendToBackendData("section-1", "CLOSE")
+        self.clsFrontendBridge.receive_event(stFrontendToBackendData)
+        self.assertIs(self.clsFrontendBridge.get_frontend_to_backend_data(), stFrontendToBackendData)
+
+    def test_receive_event_notifies_synchronously_after_storing_each_event(self):
+        received_data = []
+
+        def callback(stFrontendToBackendData):
+            self.assertIs(self.clsFrontendBridge.get_frontend_to_backend_data(), stFrontendToBackendData)
+            received_data.append(stFrontendToBackendData)
+
+        self.clsFrontendBridge.set_event_callback(callback)
+        for index, event in enumerate(("CLOSE", "SHOW", "unknown-event"), 1):
+            stFrontendToBackendData = ST_FrontendToBackendData("section-1", event)
+            self.clsFrontendBridge.receive_event(stFrontendToBackendData)
+            self.assertEqual(len(received_data), index)
+            self.assertIs(received_data[-1], stFrontendToBackendData)
+            self.assertEqual(stFrontendToBackendData.event, event)
+
+    def test_existing_setter_uses_same_event_notification(self):
+        received_data = []
+        self.clsFrontendBridge.set_event_callback(received_data.append)
+        stFrontendToBackendData = ST_FrontendToBackendData("section-1", "HIDE")
+        self.clsFrontendBridge.set_frontend_to_backend_data(stFrontendToBackendData)
+        self.assertEqual(len(received_data), 1)
+        self.assertIs(received_data[0], stFrontendToBackendData)
+
     def test_initial_frontend_data_is_absent(self):
         self.assertIsNone(self.clsFrontendBridge.get_frontend_to_backend_data())
 

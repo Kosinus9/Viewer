@@ -1,4 +1,6 @@
 import unittest
+
+from src.backend.infrastructure.CLS_FrontendBridge import CLS_FrontendBridge
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
@@ -25,7 +27,7 @@ class TestOpenFlowIntegration(unittest.TestCase):
         clsSectionManager = CLS_SectionManager(clsLayoutManager)
         clsTimerLifecycleManager = CLS_TimerLifecycleManager()
         clsViewerController = CLS_ViewerController(
-            clsSectionManager, clsTimerLifecycleManager
+            clsSectionManager, clsTimerLifecycleManager, CLS_FrontendBridge()
         )
         sections = {}
         renderers = {}

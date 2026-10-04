@@ -18,7 +18,7 @@ class TestViewerFrontendBridge(unittest.TestCase):
         self.clsLayoutManager = CLS_LayoutManager()
         self.clsLayoutManager.set_screen_dimensions(1920, 1080)
         self.clsSectionManager = CLS_SectionManager(self.clsLayoutManager)
-        self.clsViewerController = CLS_ViewerController(self.clsSectionManager, CLS_TimerLifecycleManager())
+        self.clsViewerController = CLS_ViewerController(self.clsSectionManager, CLS_TimerLifecycleManager(), CLS_FrontendBridge())
         self.addCleanup(patch.stopall)
         patch.object(CLS_PDFRenderer, "load", return_value=True).start()
         self.produced_data = []
@@ -92,7 +92,7 @@ class TestViewerFrontendBridge(unittest.TestCase):
         stFrontendToBackendData = ST_FrontendToBackendData("unregistered-section", "CLOSE")
         self.clsViewerController.frontend_bridge.set_frontend_to_backend_data(stFrontendToBackendData)
         with patch.object(self.clsViewerController, "process_command") as process_command:
-            self.assertIs(self.clsViewerController.interface_frontend_backend(), stFrontendToBackendData)
+            self.assertIs(self.clsViewerController.interface_frontend_backend(stFrontendToBackendData), stFrontendToBackendData)
             process_command.assert_not_called()
         self.assertEqual(stFrontendToBackendData.event, "CLOSE")
         self.assertEqual(self.clsSectionManager.view_sections, {})
@@ -101,11 +101,36 @@ class TestViewerFrontendBridge(unittest.TestCase):
         self.open_section(1)
         stFrontendToBackendData = ST_FrontendToBackendData("section-1", "unknown-event")
         self.clsViewerController.frontend_bridge.set_frontend_to_backend_data(stFrontendToBackendData)
-        self.assertIs(self.clsViewerController.interface_frontend_backend(), stFrontendToBackendData)
+        self.assertIs(self.clsViewerController.interface_frontend_backend(stFrontendToBackendData), stFrontendToBackendData)
         self.assert_prepared_data_identity(1)
         self.open_section(2)
         self.assertIs(self.clsViewerController.frontend_bridge.get_frontend_to_backend_data(), stFrontendToBackendData)
         self.assert_prepared_data_identity(2)
+
+    def test_injected_bridge_immediately_calls_registered_controller_method(self):
+        clsFrontendBridge = CLS_FrontendBridge()
+        interface_method = CLS_ViewerController.interface_frontend_backend
+        with patch.object(CLS_ViewerController, "interface_frontend_backend", autospec=True,
+                          side_effect=interface_method) as interface, \
+                patch.object(clsFrontendBridge, "get_frontend_to_backend_data") as get_frontend_data, \
+                patch.object(self.clsSectionManager, "get_backend_to_frontend_data") as get_backend_data:
+            clsViewerController = CLS_ViewerController(
+                self.clsSectionManager, CLS_TimerLifecycleManager(), clsFrontendBridge
+            )
+            self.assertIs(clsViewerController.frontend_bridge, clsFrontendBridge)
+            with patch.object(clsViewerController, "process_command") as process_command, \
+                    patch.object(clsViewerController, "create_job") as create_job:
+                for index, event in enumerate(("CLOSE", "SHOW", "unknown-event"), 1):
+                    stFrontendToBackendData = ST_FrontendToBackendData("section-1", event)
+                    clsFrontendBridge.receive_event(stFrontendToBackendData)
+                    self.assertEqual(interface.call_count, index)
+                    interface.assert_called_with(clsViewerController, stFrontendToBackendData)
+                    self.assertIs(interface.call_args.args[1], stFrontendToBackendData)
+                    self.assertEqual(stFrontendToBackendData.event, event)
+                process_command.assert_not_called()
+                create_job.assert_not_called()
+            get_frontend_data.assert_not_called()
+            get_backend_data.assert_not_called()
 
 
 if __name__ == "__main__":

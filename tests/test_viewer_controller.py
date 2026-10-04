@@ -1,4 +1,6 @@
 import unittest
+
+from src.backend.infrastructure.CLS_FrontendBridge import CLS_FrontendBridge
 from pathlib import Path
 from unittest.mock import Mock, call, patch
 
@@ -17,7 +19,7 @@ class TestViewerController(unittest.TestCase):
         self.clsSectionManager = CLS_SectionManager(CLS_LayoutManager())
         self.clsTimerLifecycleManager = CLS_TimerLifecycleManager()
         self.clsViewerController = CLS_ViewerController(
-            self.clsSectionManager, self.clsTimerLifecycleManager
+            self.clsSectionManager, self.clsTimerLifecycleManager, CLS_FrontendBridge()
         )
         self.file_path = str(Path("documents") / "example.pdf")
         self.file_name = "example.pdf"
@@ -108,7 +110,7 @@ class TestViewerController(unittest.TestCase):
                 clsSectionManager = Mock(spec=CLS_SectionManager)
                 clsSectionManager.find_section.return_value = "existing-section"
                 clsSectionManager.get_backend_to_frontend_data.return_value = []
-                clsViewerController = CLS_ViewerController(clsSectionManager, Mock())
+                clsViewerController = CLS_ViewerController(clsSectionManager, Mock(), CLS_FrontendBridge())
                 with patch.object(clsViewerController, "create_job") as create_job:
                     clsViewerController.process_command(ST_Command(command_type, "explicit-name.pdf", self.file_path))
                     create_job.assert_not_called()
@@ -123,7 +125,7 @@ class TestViewerController(unittest.TestCase):
             with self.subTest(command_type=command_type):
                 clsSectionManager = Mock(spec=CLS_SectionManager)
                 clsSectionManager.find_section.return_value = None
-                clsViewerController = CLS_ViewerController(clsSectionManager, Mock())
+                clsViewerController = CLS_ViewerController(clsSectionManager, Mock(), CLS_FrontendBridge())
                 with patch.object(clsViewerController, "create_job") as create_job:
                     clsViewerController.process_command(ST_Command(command_type, "explicit-name.pdf", self.file_path))
                     create_job.assert_not_called()

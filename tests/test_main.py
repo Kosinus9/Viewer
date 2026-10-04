@@ -7,6 +7,7 @@ from src.backend.application.CLS_LayoutManager import CLS_LayoutManager
 from src.backend.application.CLS_SectionManager import CLS_SectionManager
 from src.backend.application.CLS_TimerLifecycleManager import CLS_TimerLifecycleManager
 from src.backend.domain.DUT.ENUM.E_CommandType import E_CommandType
+from src.backend.infrastructure.CLS_FrontendBridge import CLS_FrontendBridge
 
 
 class TestMain(unittest.TestCase):
@@ -20,11 +21,14 @@ class TestMain(unittest.TestCase):
         clsLayoutManager = CLS_LayoutManager()
         with patch.object(main, "CLS_CommandManager") as command_manager, \
                 patch.object(main, "CLS_LayoutManager", return_value=clsLayoutManager) as layout_manager, \
-                patch.object(main, "CLS_ViewerController") as viewer_controller:
+                patch.object(main, "CLS_ViewerController") as viewer_controller, \
+                patch.object(main, "CLS_FrontendBridge", wraps=CLS_FrontendBridge) as frontend_bridge:
             main.main([])
 
         command_manager.assert_called_once_with()
-        clsSectionManager, clsTimerLifecycleManager = viewer_controller.call_args.args
+        clsSectionManager, clsTimerLifecycleManager, clsFrontendBridge = viewer_controller.call_args.args
+        frontend_bridge.assert_called_once_with()
+        self.assertIsInstance(clsFrontendBridge, CLS_FrontendBridge)
         self.assertIsInstance(clsSectionManager, CLS_SectionManager)
         self.assertIsInstance(clsLayoutManager, CLS_LayoutManager)
         self.platform_adapter.assert_called_once_with()

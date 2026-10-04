@@ -1,5 +1,7 @@
 import io
 import unittest
+
+from src.backend.infrastructure.CLS_FrontendBridge import CLS_FrontendBridge
 from contextlib import redirect_stdout
 from pathlib import Path
 from unittest.mock import patch
@@ -21,7 +23,7 @@ class TestMultiSections(unittest.TestCase):
         clsSectionManager = CLS_SectionManager(CLS_LayoutManager())
         clsTimerLifecycleManager = CLS_TimerLifecycleManager()
         clsViewerController = CLS_ViewerController(
-            clsSectionManager, clsTimerLifecycleManager
+            clsSectionManager, clsTimerLifecycleManager, CLS_FrontendBridge()
         )
         expected_sections = {}
 

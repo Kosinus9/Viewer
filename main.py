@@ -7,6 +7,7 @@ from src.backend.application.CLS_SectionManager         import CLS_SectionManage
 from src.backend.application.CLS_TimerLifecycleManager  import CLS_TimerLifecycleManager
 from src.backend.application.CLS_ViewerController       import CLS_ViewerController
 from src.backend.infrastructure.CLS_PlatformAdapter     import CLS_PlatformAdapter
+from src.backend.infrastructure.CLS_FrontendBridge      import CLS_FrontendBridge
 
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Viewer")
@@ -22,9 +23,11 @@ def main(argv: list[str] | None = None) -> None:
     clsSectionManager        = CLS_SectionManager(clsLayoutManager)
     clsPlatformAdapter       = CLS_PlatformAdapter()
     clsTimerLifecycleManager = CLS_TimerLifecycleManager()
+    clsFrontendBridge        = CLS_FrontendBridge()
     clsViewerController      = CLS_ViewerController(
                                                     clsSectionManager,
-                                                    clsTimerLifecycleManager
+                                                    clsTimerLifecycleManager,
+                                                    clsFrontendBridge
     )
 
     width, height            = clsPlatformAdapter.get_screen_dimensions()

@@ -24,6 +24,7 @@ class CLS_ViewerController:
         self._clsSectionManager         = clsSectionManager
         self._clsTimerLifecycleManager  = clsTimerLifecycleManager
         self._clsFrontendBridge         = clsFrontendBridge
+        self._clsFrontendBridge.set_event_callback(self.interface_frontend_backend)
 
     @property
     def frontend_bridge(self) -> CLS_FrontendBridge:
@@ -39,12 +40,16 @@ class CLS_ViewerController:
         # Give read-only access to the timer lifecycle manager.
         return self._clsTimerLifecycleManager
 
-    # Transfer prepared display data and expose the latest frontend input.
-    def interface_frontend_backend(self) -> ST_FrontendToBackendData | None:
+    # Receive pushed events; calls without an event transfer prepared display data.
+    def interface_frontend_backend(
+        self, stFrontendToBackendData: ST_FrontendToBackendData | None = None
+    ) -> ST_FrontendToBackendData | None:
+        if stFrontendToBackendData is not None:
+            return stFrontendToBackendData
         self._clsFrontendBridge.set_backend_to_frontend_data(
             self._clsSectionManager.get_backend_to_frontend_data()
         )
-        return self._clsFrontendBridge.get_frontend_to_backend_data()
+        return None
     
     # Route OPEN through a Job and other section actions through their file identity.
     def process_command(self, stCommand: ST_Command) -> None:
