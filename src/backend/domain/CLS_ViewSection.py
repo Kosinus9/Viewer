@@ -112,9 +112,13 @@ class CLS_ViewSection:
         previous_state = self._state
         if self._state in (E_ViewSectionState.LOADING, E_ViewSectionState.BACKGROUND):
             self.visible()
-            if self._clsRenderer is not None:
-                self._clsRenderer.render(stJobLayout)
+            self.send_layout_to_renderer_for_display(stJobLayout)
         print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} SHOW {previous_state} -> {self._state}")
+
+    # Forward the layout to the renderer already owned by this section.
+    def send_layout_to_renderer_for_display(self, stJobLayout: ST_JobLayout) -> None:
+        if self._clsRenderer is not None:
+            self._clsRenderer.render(stJobLayout)
 
     # Allow hiding only from the visible state.
     def hide(self) -> None:

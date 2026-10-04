@@ -12,6 +12,34 @@ from src.backend.infrastructure.renderers.CLS_TextRenderer import CLS_TextRender
 
 
 class TestViewSection(unittest.TestCase):
+    def test_show_calls_layout_transmission_only_for_allowed_transitions(self):
+        for initial_state in (None, *E_ViewSectionState):
+            with self.subTest(initial_state=initial_state):
+                clsViewSection = CLS_ViewSection("section", "resource.pdf", "resource.pdf")
+                stJobLayout = ST_JobLayout(480, 270, 960, 540)
+                with patch.object(clsViewSection, "_state", initial_state), \
+                        patch.object(clsViewSection, "send_layout_to_renderer_for_display") as send_layout:
+                    clsViewSection.show(stJobLayout)
+                    if initial_state in (E_ViewSectionState.LOADING, E_ViewSectionState.BACKGROUND):
+                        send_layout.assert_called_once_with(stJobLayout)
+                        self.assertIs(send_layout.call_args.args[0], stJobLayout)
+                        self.assertIs(clsViewSection.state, E_ViewSectionState.VISIBLE)
+                    else:
+                        send_layout.assert_not_called()
+                        self.assertIs(clsViewSection.state, initial_state)
+
+    def test_layout_transmission_passes_same_object_to_existing_renderer(self):
+        clsViewSection = CLS_ViewSection("section", "resource.pdf", "resource.pdf")
+        clsViewSection.initialize()
+        clsRenderer = clsViewSection._clsRenderer
+        stJobLayout = ST_JobLayout(480, 270, 960, 540)
+        with patch.object(clsRenderer, "render") as render:
+            clsViewSection.send_layout_to_renderer_for_display(stJobLayout)
+            render.assert_called_once_with(stJobLayout)
+            self.assertIs(render.call_args.args[0], stJobLayout)
+        self.assertIs(clsViewSection._clsRenderer, clsRenderer)
+        self.assertIs(clsViewSection.state, E_ViewSectionState.LOADING)
+
     def test_show_passes_same_layout_to_existing_renderer_for_each_family(self):
         for suffix in (".pdf", ".png", ".mp4", ".txt"):
             for initial_state in (E_ViewSectionState.LOADING, E_ViewSectionState.BACKGROUND):
