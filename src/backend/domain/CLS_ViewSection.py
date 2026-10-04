@@ -83,6 +83,29 @@ class CLS_ViewSection:
             self.error()
         print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} initialize() termine state={self._state}")
 
+    # A successful load stays here until the visibility policy is defined.
+    def loading(self) -> None:
+        self._state = E_ViewSectionState.LOADING
+        if self._clsRenderer is None:
+            self.error()
+            return
+        loading_success = self._clsRenderer.load(self._file_path)
+        print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} load() success={loading_success}")
+        if not loading_success:
+            self.error()
+
+    # Visible state entry; window display is not implemented yet.
+    def visible(self) -> None:
+        self._state = E_ViewSectionState.VISIBLE
+
+    # Background state entry; window hiding is not implemented yet.
+    def background(self) -> None:
+        self._state = E_ViewSectionState.BACKGROUND
+
+    # Error state entry; error handling is not implemented yet.
+    def error(self) -> None:
+        self._state = E_ViewSectionState.ERROR
+
     # Allow visibility only from the background state.
     def show(self) -> None:
         previous_state = self._state
@@ -110,28 +133,8 @@ class CLS_ViewSection:
         ):
             self.closing()
 
-    # A successful load stays here until the visibility policy is defined.
-    def loading(self) -> None:
-        self._state = E_ViewSectionState.LOADING
-        if self._clsRenderer is None:
-            self.error()
-            return
-        loading_success = self._clsRenderer.load(self._file_path)
-        print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} load() success={loading_success}")
-        if not loading_success:
-            self.error()
 
-    # Visible state entry; window display is not implemented yet.
-    def visible(self) -> None:
-        self._state = E_ViewSectionState.VISIBLE
 
-    # Background state entry; window hiding is not implemented yet.
-    def background(self) -> None:
-        self._state = E_ViewSectionState.BACKGROUND
-
-    # Error state entry; error handling is not implemented yet.
-    def error(self) -> None:
-        self._state = E_ViewSectionState.ERROR
 
     # Closing state entry; cleanup and completion remain pending.
     def closing(self) -> None:

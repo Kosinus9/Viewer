@@ -57,6 +57,27 @@ class CLS_SectionManager:
         if clsViewSection.state == E_ViewSectionState.LOADING:
             self.on_section_loaded(section_id)
 
+    # Apply the visibility policy after successful resource loading.
+    def on_section_loaded(self, section_id: str) -> None:
+        clsViewSection = self.get_section(section_id)
+        if clsViewSection is not None and clsViewSection.state == E_ViewSectionState.LOADING:
+            number_of_active_section = self.get_number_of_active_section()
+            if number_of_active_section < 4:
+                self.show_section(section_id)
+            else:
+                clsViewSection.background()
+        
+    # Delegate the show request when the section exists.
+    def show_section(self, section_id: str) -> None:
+        clsViewSection = self.get_section(section_id)
+        if clsViewSection is not None:
+            if clsViewSection.state == E_ViewSectionState.BACKGROUND and self.get_number_of_active_section() >= 4:
+                return
+            previous_state = clsViewSection.state
+            clsViewSection.show()
+            if clsViewSection.state != previous_state:
+                self.update_layout()
+
         print(
             "[TRACE TEMP][SectionManager] Section créée et enregistrée dans _view_sections\n"
             f"  section_id : {section_id}\n"
@@ -68,23 +89,6 @@ class CLS_SectionManager:
     def get_section(self, section_id: str) -> CLS_ViewSection | None:
         return self._view_sections.get(section_id)
 
-    # Apply the visibility policy after successful resource loading.
-    def on_section_loaded(self, section_id: str) -> None:
-        clsViewSection = self.get_section(section_id)
-        if clsViewSection is not None and clsViewSection.state == E_ViewSectionState.LOADING:
-            clsViewSection.background()
-            self.show_section(section_id)
-
-    # Delegate the show request when the section exists.
-    def show_section(self, section_id: str) -> None:
-        clsViewSection = self.get_section(section_id)
-        if clsViewSection is not None:
-            if clsViewSection.state == E_ViewSectionState.BACKGROUND and self.get_number_of_active_section() >= 4:
-                return
-            previous_state = clsViewSection.state
-            clsViewSection.show()
-            if clsViewSection.state != previous_state:
-                self.update_layout()
 
     # Delegate the hide request when the section exists.
     def hide_section(self, section_id: str) -> None:

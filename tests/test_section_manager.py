@@ -15,6 +15,56 @@ from src.backend.domain.DUT.STRUCT.ST_JobLifecycle import ST_JobLifecycle
 
 
 class TestSectionManager(unittest.TestCase):
+    def test_on_section_loaded_requests_show_when_space_available(self):
+        for number_of_active_section in range(4):
+            with self.subTest(number_of_active_section=number_of_active_section):
+                clsSectionManager = CLS_SectionManager(Mock(spec=CLS_LayoutManager))
+                for index in range(number_of_active_section):
+                    clsVisibleViewSection = CLS_ViewSection(str(index), "visible.pdf", "visible.pdf")
+                    clsVisibleViewSection.visible()
+                    clsSectionManager.view_sections[str(index)] = clsVisibleViewSection
+                clsViewSection = CLS_ViewSection("loading", "resource.pdf", "resource.pdf")
+                with patch("src.backend.infrastructure.renderers.CLS_PDFRenderer.CLS_PDFRenderer.load", return_value=True):
+                    clsViewSection.initialize()
+                clsSectionManager.view_sections["loading"] = clsViewSection
+                with patch.object(clsSectionManager, "show_section") as show_section, \
+                        patch.object(clsViewSection, "background") as background:
+                    clsSectionManager.on_section_loaded("loading")
+                    show_section.assert_called_once_with("loading")
+                    background.assert_not_called()
+                self.assertIs(clsViewSection.state, E_ViewSectionState.LOADING)
+
+    def test_on_section_loaded_backgrounds_section_when_four_visible(self):
+        clsSectionManager = CLS_SectionManager(Mock(spec=CLS_LayoutManager))
+        for index in range(4):
+            clsVisibleViewSection = CLS_ViewSection(str(index), "visible.pdf", "visible.pdf")
+            clsVisibleViewSection.visible()
+            clsSectionManager.view_sections[str(index)] = clsVisibleViewSection
+        clsViewSection = CLS_ViewSection("loading", "resource.pdf", "resource.pdf")
+        with patch("src.backend.infrastructure.renderers.CLS_PDFRenderer.CLS_PDFRenderer.load", return_value=True):
+            clsViewSection.initialize()
+        clsSectionManager.view_sections["loading"] = clsViewSection
+        with patch.object(clsSectionManager, "show_section") as show_section, \
+                patch.object(clsViewSection, "background", wraps=clsViewSection.background) as background:
+            clsSectionManager.on_section_loaded("loading")
+            show_section.assert_not_called()
+            background.assert_called_once_with()
+        self.assertIs(clsViewSection.state, E_ViewSectionState.BACKGROUND)
+
+    def test_on_section_loaded_ignores_missing_and_nonloading_sections(self):
+        clsSectionManager = CLS_SectionManager(Mock(spec=CLS_LayoutManager))
+        clsViewSection = CLS_ViewSection("section", "resource.pdf", "resource.pdf")
+        clsSectionManager.view_sections["section"] = clsViewSection
+        with patch.object(clsSectionManager, "show_section") as show_section, \
+                patch.object(clsViewSection, "background") as background:
+            clsSectionManager.on_section_loaded("missing")
+            for state in (None, E_ViewSectionState.VISIBLE, E_ViewSectionState.ERROR, E_ViewSectionState.CLOSING, E_ViewSectionState.CLOSED):
+                if state is not None:
+                    getattr(clsViewSection, state.value)()
+                clsSectionManager.on_section_loaded("section")
+            show_section.assert_not_called()
+            background.assert_not_called()
+
     def test_open_success_automatically_shows_four_sections_and_backgrounds_fifth(self):
         clsLayoutManager = CLS_LayoutManager()
         clsLayoutManager.set_screen_dimensions(1920, 1080)
