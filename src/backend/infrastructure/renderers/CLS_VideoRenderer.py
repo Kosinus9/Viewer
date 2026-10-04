@@ -28,7 +28,7 @@ class CLS_VideoRenderer:
         file_type:  E_FileType,
     ) -> ST_BackendToFrontendData:
         return ST_BackendToFrontendData(
-            renderer_name  = file_type,
+            file_type    = file_type,
             section_id     = section_id,
             file_name      = file_name,
             file_path      = file_path,

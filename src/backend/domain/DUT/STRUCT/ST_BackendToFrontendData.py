@@ -5,7 +5,7 @@ from ..ENUM.E_FileType import E_FileType
 
 @dataclass
 class ST_BackendToFrontendData:
-    renderer_name: E_FileType
+    file_type:     E_FileType
     section_id:    str
     file_name:     str
     file_path:     str
