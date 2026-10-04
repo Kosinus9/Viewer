@@ -19,19 +19,19 @@ class TestFrontendDataStructures(unittest.TestCase):
                 stBackendToFrontendData = ST_BackendToFrontendData(
                     render_name, "section-1", "provided-name", "documents/resource", stJobLayout
                 )
-                self.assertIs(stBackendToFrontendData.renderer_name, render_name)
+                self.assertIs(stBackendToFrontendData.file_type, render_name)
                 self.assertIs(stBackendToFrontendData.stJobLayout, stJobLayout)
 
     def test_backend_to_frontend_preserves_data_and_layout_identity(self):
         stJobLayout = ST_JobLayout(480, 270, 960, 540)
         stBackendToFrontendData = ST_BackendToFrontendData(
-            renderer_name=E_FileType.PDF,
+            file_type=E_FileType.PDF,
             section_id="section-1",
             file_name="provided-name.pdf",
             file_path="documents/document.pdf",
             stJobLayout=stJobLayout,
         )
-        self.assertIs(stBackendToFrontendData.renderer_name, E_FileType.PDF)
+        self.assertIs(stBackendToFrontendData.file_type, E_FileType.PDF)
         self.assertEqual(stBackendToFrontendData.section_id, "section-1")
         self.assertEqual(stBackendToFrontendData.file_name, "provided-name.pdf")
         self.assertEqual(stBackendToFrontendData.file_path, "documents/document.pdf")

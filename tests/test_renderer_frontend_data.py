@@ -29,7 +29,7 @@ class TestRendererFrontendData(unittest.TestCase):
                     file_type=file_type,
                 )
                 self.assertIsInstance(stBackendToFrontendData, ST_BackendToFrontendData)
-                self.assertIs(stBackendToFrontendData.renderer_name, file_type)
+                self.assertIs(stBackendToFrontendData.file_type, file_type)
                 self.assertEqual(stBackendToFrontendData.section_id, "section-1")
                 self.assertEqual(stBackendToFrontendData.file_name, "provided-name.bin")
                 self.assertEqual(stBackendToFrontendData.file_path, "documents/different-name.resource")
@@ -45,7 +45,7 @@ class TestRendererFrontendData(unittest.TestCase):
                     file_name="provided-name.txt", file_path="different-name.pdf",
                     file_type=E_FileType.UNKNOWN,
                 )
-                self.assertIs(stBackendToFrontendData.renderer_name, E_FileType.UNKNOWN)
+                self.assertIs(stBackendToFrontendData.file_type, E_FileType.UNKNOWN)
                 self.assertEqual(stBackendToFrontendData.file_name, "provided-name.txt")
                 self.assertEqual(stBackendToFrontendData.file_path, "different-name.pdf")
                 self.assertIs(stBackendToFrontendData.stJobLayout, stJobLayout)
@@ -84,7 +84,7 @@ class TestRendererFrontendData(unittest.TestCase):
                     self.assertIs(clsViewSection.file_type, file_type)
                     self.assertIsInstance(clsRenderer, renderer_class)
                     self.assertIs(stBackendToFrontendData, produced_data[0])
-                    self.assertIs(stBackendToFrontendData.renderer_name, file_type)
+                    self.assertIs(stBackendToFrontendData.file_type, file_type)
                     self.assertEqual(stBackendToFrontendData.section_id, clsViewSection.section_id)
                     self.assertEqual(stBackendToFrontendData.file_name, clsViewSection.file_name)
                     self.assertEqual(stBackendToFrontendData.file_path, clsViewSection.file_path)
