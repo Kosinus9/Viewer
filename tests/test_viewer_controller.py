@@ -107,6 +107,7 @@ class TestViewerController(unittest.TestCase):
             with self.subTest(command_type=command_type):
                 clsSectionManager = Mock(spec=CLS_SectionManager)
                 clsSectionManager.find_section.return_value = "existing-section"
+                clsSectionManager.get_backend_to_frontend_data.return_value = []
                 clsViewerController = CLS_ViewerController(clsSectionManager, Mock())
                 with patch.object(clsViewerController, "create_job") as create_job:
                     clsViewerController.process_command(ST_Command(command_type, "explicit-name.pdf", self.file_path))
@@ -114,6 +115,7 @@ class TestViewerController(unittest.TestCase):
                 self.assertEqual(clsSectionManager.method_calls, [
                     call.find_section("explicit-name.pdf", self.file_path),
                     getattr(call, method_name)("existing-section"),
+                    call.get_backend_to_frontend_data(),
                 ])
 
     def test_missing_section_does_not_trigger_an_action(self):
@@ -133,17 +135,21 @@ class TestViewerController(unittest.TestCase):
         first_job = self.clsViewerController.create_job(ST_Command(E_CommandType.OPEN, self.file_name, self.file_path))
         other_path = str(Path("other") / "example.pdf")
         other_job = self.clsViewerController.create_job(ST_Command(E_CommandType.OPEN, self.file_name, other_path))
-        first_id = self.clsSectionManager.create_section(first_job)
-        other_id = self.clsSectionManager.create_section(other_job)
+        self.clsSectionManager._clsLayoutManager.set_screen_dimensions(1920, 1080)
+        with patch("src.backend.infrastructure.renderers.CLS_PDFRenderer.CLS_PDFRenderer.load", return_value=True):
+            first_id = self.clsSectionManager.create_section(first_job)
+            other_id = self.clsSectionManager.create_section(other_job)
+        self.clsSectionManager.hide_section(first_id)
         clsViewSection = self.clsSectionManager.get_section(first_id)
         clsOtherViewSection = self.clsSectionManager.get_section(other_id)
 
         with patch.object(clsViewSection, "show") as show, patch.object(clsViewSection, "hide") as hide, \
                 patch.object(clsViewSection, "close") as close, patch.object(clsOtherViewSection, "close") as other_close:
             self.clsViewerController.process_command(ST_Command(E_CommandType.SHOW, self.file_name, self.file_path))
+            stJobLayout = self.clsSectionManager._stJobLayouts[first_id]
             self.clsViewerController.process_command(ST_Command(E_CommandType.HIDE, self.file_name, self.file_path))
             self.clsViewerController.process_command(ST_Command(E_CommandType.CLOSE, self.file_name, self.file_path))
-            show.assert_called_once_with()
+            show.assert_called_once_with(stJobLayout)
             hide.assert_called_once_with()
             close.assert_called_once_with()
             other_close.assert_not_called()

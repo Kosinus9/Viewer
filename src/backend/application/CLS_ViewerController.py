@@ -1,14 +1,16 @@
-from uuid                                   import uuid4
+from uuid                                           import uuid4
 
-from .CLS_SectionManager                    import CLS_SectionManager
-from .CLS_TimerLifecycleManager             import CLS_TimerLifecycleManager
+from .CLS_SectionManager                            import CLS_SectionManager
+from .CLS_TimerLifecycleManager                     import CLS_TimerLifecycleManager
+from ..infrastructure.CLS_FrontendBridge            import CLS_FrontendBridge
+from ..domain.DUT.STRUCT.ST_FrontendToBackendData   import ST_FrontendToBackendData
 
-from ..domain.DUT.ENUM.E_CommandType        import E_CommandType
-from ..domain.DUT.STRUCT.ST_Command         import ST_Command
-from ..domain.DUT.STRUCT.ST_Job             import ST_Job
-from ..domain.DUT.STRUCT.ST_JobSection      import ST_JobSection
-from ..domain.DUT.STRUCT.ST_JobLayout       import ST_JobLayout
-from ..domain.DUT.STRUCT.ST_JobLifecycle    import ST_JobLifecycle
+from ..domain.DUT.ENUM.E_CommandType                import E_CommandType
+from ..domain.DUT.STRUCT.ST_Command                 import ST_Command
+from ..domain.DUT.STRUCT.ST_Job                     import ST_Job
+from ..domain.DUT.STRUCT.ST_JobSection              import ST_JobSection
+from ..domain.DUT.STRUCT.ST_JobLayout               import ST_JobLayout
+from ..domain.DUT.STRUCT.ST_JobLifecycle            import ST_JobLifecycle
 
 # Main backend controller that coordinates the application managers.
 class CLS_ViewerController:
@@ -16,10 +18,16 @@ class CLS_ViewerController:
         self, 
         clsSectionManager         : CLS_SectionManager,
         clsTimerLifecycleManager  : CLS_TimerLifecycleManager,
+        clsFrontendBridge         : CLS_FrontendBridge,
     ) -> None:
         # Store the managers provided by the caller.
         self._clsSectionManager         = clsSectionManager
         self._clsTimerLifecycleManager  = clsTimerLifecycleManager
+        self._clsFrontendBridge         = clsFrontendBridge
+
+    @property
+    def frontend_bridge(self) -> CLS_FrontendBridge:
+        return self._clsFrontendBridge
 
     @property
     def section_manager(self) -> CLS_SectionManager:
@@ -31,6 +39,13 @@ class CLS_ViewerController:
         # Give read-only access to the timer lifecycle manager.
         return self._clsTimerLifecycleManager
 
+    # Transfer prepared display data and expose the latest frontend input.
+    def interface_frontend_backend(self) -> ST_FrontendToBackendData | None:
+        self._clsFrontendBridge.set_backend_to_frontend_data(
+            self._clsSectionManager.get_backend_to_frontend_data()
+        )
+        return self._clsFrontendBridge.get_frontend_to_backend_data()
+    
     # Route OPEN through a Job and other section actions through their file identity.
     def process_command(self, stCommand: ST_Command) -> None:
         print(
@@ -67,6 +82,7 @@ class CLS_ViewerController:
                     "[TRACE TEMP][ViewerController] Retour de SectionManager.create_section()\n"
                     f"  section_id : {section_id}\n"
                 )
+                self.interface_frontend_backend()
         elif command_type in (E_CommandType.SHOW, E_CommandType.HIDE, E_CommandType.CLOSE):
             section_id = self._clsSectionManager.find_section(
                 stCommand.file_name, stCommand.file_path
@@ -85,6 +101,7 @@ class CLS_ViewerController:
                 self._clsSectionManager.hide_section(section_id)
             elif command_type == E_CommandType.CLOSE:
                 self._clsSectionManager.close_section(section_id)
+            self.interface_frontend_backend()
         elif command_type == E_CommandType.RESET:
             pass
 

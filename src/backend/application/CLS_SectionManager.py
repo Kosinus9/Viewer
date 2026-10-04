@@ -1,8 +1,12 @@
-from ..domain.CLS_ViewSection               import CLS_ViewSection
-from ..domain.DUT.STRUCT.ST_Job             import ST_Job
-from ..domain.DUT.STRUCT.ST_JobLayout       import ST_JobLayout
-from ..domain.DUT.ENUM.E_ViewSectionState   import E_ViewSectionState
-from .CLS_LayoutManager                     import CLS_LayoutManager
+
+from ..domain.DUT.STRUCT.ST_Job                     import ST_Job
+from ..domain.DUT.STRUCT.ST_JobLayout               import ST_JobLayout
+from ..domain.DUT.STRUCT.ST_BackendToFrontendData   import ST_BackendToFrontendData
+
+from ..domain.DUT.ENUM.E_ViewSectionState           import E_ViewSectionState
+
+from .CLS_LayoutManager                             import CLS_LayoutManager
+from ..domain.CLS_ViewSection                       import CLS_ViewSection
 
 
 # Manage active view sections and their section IDs.
@@ -10,8 +14,9 @@ class CLS_SectionManager:
     def __init__(self, clsLayoutManager: CLS_LayoutManager) -> None:
         self._clsLayoutManager = clsLayoutManager
         # Map each section ID to its CLS_ViewSection instance.
-        self._view_sections: dict[str, CLS_ViewSection] = {}
-        self._stJobLayouts:  dict[str, ST_JobLayout]    = {}
+        self._view_sections:            dict[str, CLS_ViewSection]          = {}
+        self._stJobLayouts:             dict[str, ST_JobLayout]             = {}
+        self._stBackendToFrontendData:  dict[str, ST_BackendToFrontendData] = {}
 
     @property
     def view_sections(self) -> dict[str, CLS_ViewSection]:
@@ -56,6 +61,7 @@ class CLS_SectionManager:
         clsViewSection.initialize()
         if clsViewSection.state == E_ViewSectionState.LOADING:
             self.on_section_loaded(section_id)
+        return section_id
 
     # Apply the visibility policy after successful resource loading.
     def on_section_loaded(self, section_id: str) -> None:
@@ -78,14 +84,17 @@ class CLS_SectionManager:
             stJobLayouts = self._recompute_layouts_if_needed(clsViewSection)
             if stJobLayouts is None:
                 return
-            clsViewSection.show(self._stJobLayouts[section_id])
+            stBackendToFrontendData = clsViewSection.show(self._stJobLayouts[section_id])
+            if stBackendToFrontendData is not None:
+                self._stBackendToFrontendData[section_id] = stBackendToFrontendData
 
-        print(
-            "[TRACE TEMP][SectionManager] Section créée et enregistrée dans _view_sections\n"
-            f"  section_id : {section_id}\n"
-        )
-        print("[TRACE TEMP][SectionManager] create_section() retourne section_id\n")
-        return section_id
+    def get_backend_to_frontend_data(self) -> list[ST_BackendToFrontendData]:
+        return [
+            self._stBackendToFrontendData[section_id]
+            for section_id in self._stJobLayouts
+            if section_id in self._stBackendToFrontendData
+            and self._view_sections[section_id].state == E_ViewSectionState.VISIBLE
+        ]
 
     # Return the section with this ID, or None if it does not exist.
     def get_section(self, section_id: str) -> CLS_ViewSection | None:
@@ -139,6 +148,14 @@ class CLS_SectionManager:
             self._map_layouts_to_visible_sections([], [])
             return None
         self._map_layouts_to_visible_sections(clsVisibleViewSections, stJobLayouts)
+        # Refresh prepared data for sections that were already visible.
+        for clsViewSection in clsVisibleViewSections:
+            if clsViewSection.state == E_ViewSectionState.VISIBLE:
+                stBackendToFrontendData = clsViewSection.send_layout_to_renderer_for_display(
+                    self._stJobLayouts[clsViewSection.section_id]
+                )
+                if stBackendToFrontendData is not None:
+                    self._stBackendToFrontendData[clsViewSection.section_id] = stBackendToFrontendData
         return stJobLayouts
 
     # Replace the mapping so hidden or removed sections cannot keep a layout.
@@ -150,6 +167,11 @@ class CLS_SectionManager:
         self._stJobLayouts = {
             clsViewSection.section_id: stJobLayout
             for clsViewSection, stJobLayout in zip(clsVisibleViewSections, stJobLayouts, strict=True)
+        }
+        self._stBackendToFrontendData = {
+            section_id: stBackendToFrontendData
+            for section_id, stBackendToFrontendData in self._stBackendToFrontendData.items()
+            if section_id in self._stJobLayouts
         }
 
     # Return an existing section ID for reuse, or None if no section matches.
@@ -164,6 +186,7 @@ class CLS_SectionManager:
     def remove_section(self, section_id: str) -> None:
         clsViewSection = self._view_sections.pop(section_id, None)
         self._stJobLayouts.pop(section_id, None)
+        self._stBackendToFrontendData.pop(section_id, None)
         if clsViewSection is not None and clsViewSection.state == E_ViewSectionState.VISIBLE:
             self.update_layout()
 
@@ -171,6 +194,7 @@ class CLS_SectionManager:
     def clear_sections(self) -> None:
         self._view_sections.clear()
         self._stJobLayouts.clear()
+        self._stBackendToFrontendData.clear()
 
     # Reset the manager by clearing its section registry.
     def reset(self) -> None:
