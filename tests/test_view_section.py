@@ -35,7 +35,7 @@ class TestViewSection(unittest.TestCase):
         stJobLayout = ST_JobLayout(480, 270, 960, 540)
         with patch.object(clsRenderer, "render") as render:
             clsViewSection.send_layout_to_renderer_for_display(stJobLayout)
-            render.assert_called_once_with(stJobLayout)
+            render.assert_called_once_with(stJobLayout, section_id=clsViewSection.section_id, file_name=clsViewSection.file_name, file_path=clsViewSection.file_path, file_type=clsViewSection.file_type)
             self.assertIs(render.call_args.args[0], stJobLayout)
         self.assertIs(clsViewSection._clsRenderer, clsRenderer)
         self.assertIs(clsViewSection.state, E_ViewSectionState.LOADING)
@@ -52,11 +52,11 @@ class TestViewSection(unittest.TestCase):
                     stJobLayout = ST_JobLayout(480, 270, 960, 540)
                     with patch.object(clsRenderer, "render") as render:
                         clsViewSection.show(stJobLayout)
-                        render.assert_called_once_with(stJobLayout)
+                        render.assert_called_once_with(stJobLayout, section_id=clsViewSection.section_id, file_name=clsViewSection.file_name, file_path=clsViewSection.file_path, file_type=clsViewSection.file_type)
                         self.assertIs(render.call_args.args[0], stJobLayout)
                         self.assertIs(clsViewSection.state, E_ViewSectionState.VISIBLE)
                         clsViewSection.show(stJobLayout)
-                        render.assert_called_once_with(stJobLayout)
+                        render.assert_called_once_with(stJobLayout, section_id=clsViewSection.section_id, file_name=clsViewSection.file_name, file_path=clsViewSection.file_path, file_type=clsViewSection.file_type)
                     self.assertIs(clsViewSection._clsRenderer, clsRenderer)
 
     def test_show_does_not_render_from_unauthorized_states(self):

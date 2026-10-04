@@ -30,7 +30,7 @@ class TestSectionManager(unittest.TestCase):
                 calculate_layouts.assert_called_once_with(index)
                 stJobLayout = clsSectionManager._stJobLayouts[section_id]
                 show.assert_called_once_with(stJobLayout)
-                render.assert_called_once_with(stJobLayout)
+                render.assert_called_once_with(stJobLayout, section_id=clsViewSection.section_id, file_name=clsViewSection.file_name, file_path=clsViewSection.file_path, file_type=clsViewSection.file_type)
                 self.assertIs(show.call_args.args[0], stJobLayout)
                 self.assertIs(render.call_args.args[0], stJobLayout)
                 self.assertIs(clsViewSection._clsRenderer, clsRenderer)

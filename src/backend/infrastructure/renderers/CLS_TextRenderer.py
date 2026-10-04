@@ -1,4 +1,6 @@
 from ...domain.DUT.STRUCT.ST_JobLayout import ST_JobLayout
+from ...domain.DUT.STRUCT.ST_BackendToFrontendData import ST_BackendToFrontendData
+from ...domain.DUT.ENUM.E_FileType import E_FileType
 
 
 class CLS_TextRenderer:
@@ -12,6 +14,20 @@ class CLS_TextRenderer:
         except (OSError, ValueError):
             return False
 
-    # Frontend rendering will be connected in a later step.
-    def render(self, stJobLayout: ST_JobLayout) -> None:
-        pass
+    # Prepare the frontend contract without sending it yet.
+    def render(
+        self,
+        stJobLayout: ST_JobLayout,
+        *,
+        section_id: str,
+        file_name:  str,
+        file_path:  str,
+        file_type:  E_FileType,
+    ) -> ST_BackendToFrontendData:
+        return ST_BackendToFrontendData(
+            renderer_name  = file_type,
+            section_id     = section_id,
+            file_name      = file_name,
+            file_path      = file_path,
+            stJobLayout    = stJobLayout,
+        )

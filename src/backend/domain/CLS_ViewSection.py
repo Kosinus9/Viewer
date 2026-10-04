@@ -3,6 +3,7 @@ from pathlib                                      import Path
 from .DUT.ENUM.E_FileType                         import E_FileType
 from .DUT.ENUM.E_ViewSectionState                 import E_ViewSectionState
 from .DUT.STRUCT.ST_JobLayout                     import ST_JobLayout
+from .DUT.STRUCT.ST_BackendToFrontendData          import ST_BackendToFrontendData
 from ..infrastructure.renderers.CLS_PDFRenderer   import CLS_PDFRenderer
 from ..infrastructure.renderers.CLS_ImageRenderer import CLS_ImageRenderer
 from ..infrastructure.renderers.CLS_VideoRenderer import CLS_VideoRenderer
@@ -108,17 +109,26 @@ class CLS_ViewSection:
         self._state = E_ViewSectionState.ERROR
 
     # Allow visibility after loading or while returning from the background.
-    def show(self, stJobLayout: ST_JobLayout) -> None:
+    def show(self, stJobLayout: ST_JobLayout) -> ST_BackendToFrontendData | None:
         previous_state = self._state
+        stBackendToFrontendData = None
         if self._state in (E_ViewSectionState.LOADING, E_ViewSectionState.BACKGROUND):
             self.visible()
-            self.send_layout_to_renderer_for_display(stJobLayout)
+            stBackendToFrontendData = self.send_layout_to_renderer_for_display(stJobLayout)
         print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} SHOW {previous_state} -> {self._state}")
+        return stBackendToFrontendData
 
     # Forward the layout to the renderer already owned by this section.
-    def send_layout_to_renderer_for_display(self, stJobLayout: ST_JobLayout) -> None:
+    def send_layout_to_renderer_for_display(self, stJobLayout: ST_JobLayout) -> ST_BackendToFrontendData | None:
         if self._clsRenderer is not None:
-            self._clsRenderer.render(stJobLayout)
+            return self._clsRenderer.render(
+                stJobLayout,
+                section_id     = self._section_id,
+                file_name      = self._file_name,
+                file_path      = self._file_path,
+                file_type      = self._file_type,
+            )
+        return None
 
     # Allow hiding only from the visible state.
     def hide(self) -> None:
@@ -139,9 +149,6 @@ class CLS_ViewSection:
             E_ViewSectionState.ERROR,
         ):
             self.closing()
-
-
-
 
     # Closing state entry; cleanup and completion remain pending.
     def closing(self) -> None:
