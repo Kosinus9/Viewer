@@ -1,3 +1,6 @@
+from ...domain.DUT.STRUCT.ST_JobLayout import ST_JobLayout
+
+
 class CLS_PDFRenderer:
     # Check the PDF header; full document parsing is deferred.
     def load(self, file_path: str) -> bool:
@@ -13,3 +16,7 @@ class CLS_PDFRenderer:
             )
         except (OSError, ValueError):
             return False
+
+    # Frontend rendering will be connected in a later step.
+    def render(self, stJobLayout: ST_JobLayout) -> None:
+        pass

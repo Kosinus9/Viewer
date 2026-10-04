@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from src.backend.domain.CLS_ViewSection import CLS_ViewSection
+from src.backend.domain.DUT.STRUCT.ST_JobLayout import ST_JobLayout
 from src.backend.domain.DUT.ENUM.E_FileType import E_FileType
 from src.backend.domain.DUT.ENUM.E_ViewSectionState import E_ViewSectionState
 from src.backend.infrastructure.renderers.CLS_PDFRenderer import CLS_PDFRenderer
@@ -11,6 +12,35 @@ from src.backend.infrastructure.renderers.CLS_TextRenderer import CLS_TextRender
 
 
 class TestViewSection(unittest.TestCase):
+    def test_show_passes_same_layout_to_existing_renderer_for_each_family(self):
+        for suffix in (".pdf", ".png", ".mp4", ".txt"):
+            for initial_state in (E_ViewSectionState.LOADING, E_ViewSectionState.BACKGROUND):
+                with self.subTest(suffix=suffix, initial_state=initial_state):
+                    clsViewSection = CLS_ViewSection("section", "resource" + suffix, "resource" + suffix)
+                    clsViewSection.initialize()
+                    if initial_state == E_ViewSectionState.BACKGROUND:
+                        clsViewSection.background()
+                    clsRenderer = clsViewSection._clsRenderer
+                    stJobLayout = ST_JobLayout(480, 270, 960, 540)
+                    with patch.object(clsRenderer, "render") as render:
+                        clsViewSection.show(stJobLayout)
+                        render.assert_called_once_with(stJobLayout)
+                        self.assertIs(render.call_args.args[0], stJobLayout)
+                        self.assertIs(clsViewSection.state, E_ViewSectionState.VISIBLE)
+                        clsViewSection.show(stJobLayout)
+                        render.assert_called_once_with(stJobLayout)
+                    self.assertIs(clsViewSection._clsRenderer, clsRenderer)
+
+    def test_show_does_not_render_from_unauthorized_states(self):
+        clsViewSection = CLS_ViewSection("section", "resource.pdf", "resource.pdf")
+        clsViewSection.initialize()
+        with patch.object(clsViewSection._clsRenderer, "render") as render:
+            for state in (E_ViewSectionState.ERROR, E_ViewSectionState.CLOSING, E_ViewSectionState.CLOSED):
+                getattr(clsViewSection, state.value)()
+                clsViewSection.show(ST_JobLayout(0, 0, 960, 540))
+                self.assertIs(clsViewSection.state, state)
+            render.assert_not_called()
+
     def setUp(self):
         for renderer_class in (CLS_PDFRenderer, CLS_ImageRenderer, CLS_VideoRenderer, CLS_TextRenderer):
             patcher = patch.object(renderer_class, "load", return_value=True)
@@ -71,6 +101,7 @@ class TestViewSection(unittest.TestCase):
 
     def test_defined_transitions(self):
         for initial_state, method_name, expected_state in (
+            (E_ViewSectionState.LOADING, "show", E_ViewSectionState.VISIBLE),
             (E_ViewSectionState.BACKGROUND, "show", E_ViewSectionState.VISIBLE),
             (E_ViewSectionState.VISIBLE, "hide", E_ViewSectionState.BACKGROUND),
             (E_ViewSectionState.VISIBLE, "close", E_ViewSectionState.CLOSING),
@@ -80,11 +111,31 @@ class TestViewSection(unittest.TestCase):
             with self.subTest(initial_state=initial_state, method=method_name):
                 clsViewSection = CLS_ViewSection("section-1", "document.pdf", "documents/document.pdf")
                 with patch.object(clsViewSection, "_state", initial_state):
-                    getattr(clsViewSection, method_name)()
+                    getattr(clsViewSection, method_name)(*([ST_JobLayout(0, 0, 960, 540)] if method_name == "show" else []))
                     self.assertIs(clsViewSection.state, expected_state)
+
+    def test_show_after_loading_enters_visible_without_background(self):
+        clsViewSection = CLS_ViewSection("section-1", "document.pdf", "documents/document.pdf")
+        clsViewSection.initialize()
+        self.assertIs(clsViewSection.state, E_ViewSectionState.LOADING)
+        with patch.object(clsViewSection, "background") as background, \
+                patch.object(clsViewSection, "visible", wraps=clsViewSection.visible) as visible:
+            clsViewSection.show(ST_JobLayout(0, 0, 960, 540))
+            visible.assert_called_once_with()
+            background.assert_not_called()
+        self.assertIs(clsViewSection.state, E_ViewSectionState.VISIBLE)
+
+    def test_show_already_visible_does_not_reenter_visible(self):
+        clsViewSection = CLS_ViewSection("section-1", "document.pdf", "documents/document.pdf")
+        clsViewSection.visible()
+        with patch.object(clsViewSection, "visible") as visible:
+            clsViewSection.show(ST_JobLayout(0, 0, 960, 540))
+            visible.assert_not_called()
+        self.assertIs(clsViewSection.state, E_ViewSectionState.VISIBLE)
 
     def test_actions_call_state_methods(self):
         for initial_state, action, state_method in (
+            (E_ViewSectionState.LOADING, "show", "visible"),
             (None, "initialize", "loading"),
             (E_ViewSectionState.BACKGROUND, "show", "visible"),
             (E_ViewSectionState.VISIBLE, "hide", "background"),
@@ -97,7 +148,7 @@ class TestViewSection(unittest.TestCase):
                 with patch.object(clsViewSection, "_state", initial_state), \
                         patch.object(clsViewSection, state_method) as enter_state, \
                         patch.object(clsViewSection, "closed") as closed:
-                    getattr(clsViewSection, action)()
+                    getattr(clsViewSection, action)(*([ST_JobLayout(0, 0, 960, 540)] if action == "show" else []))
                     enter_state.assert_called_once_with()
                     closed.assert_not_called()
                     self.assertIs(clsViewSection.state, initial_state)
@@ -155,7 +206,7 @@ class TestViewSection(unittest.TestCase):
 
     def test_undefined_transitions_preserve_state(self):
         allowed_states = {
-            "show": {E_ViewSectionState.BACKGROUND},
+            "show": {E_ViewSectionState.LOADING, E_ViewSectionState.BACKGROUND},
             "hide": {E_ViewSectionState.VISIBLE},
             "close": {E_ViewSectionState.VISIBLE, E_ViewSectionState.BACKGROUND, E_ViewSectionState.ERROR},
         }
@@ -166,7 +217,7 @@ class TestViewSection(unittest.TestCase):
                 with self.subTest(method=method_name, initial_state=initial_state):
                     clsViewSection = CLS_ViewSection("section-1", "document.pdf", "documents/document.pdf")
                     with patch.object(clsViewSection, "_state", initial_state):
-                        getattr(clsViewSection, method_name)()
+                        getattr(clsViewSection, method_name)(*([ST_JobLayout(0, 0, 960, 540)] if method_name == "show" else []))
                         self.assertIs(clsViewSection.state, initial_state)
 
     def test_state_is_read_only(self):

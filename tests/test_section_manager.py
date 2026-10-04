@@ -15,6 +15,26 @@ from src.backend.domain.DUT.STRUCT.ST_JobLifecycle import ST_JobLifecycle
 
 
 class TestSectionManager(unittest.TestCase):
+    def test_layout_identity_is_preserved_from_manager_through_show_to_renderer(self):
+        clsLayoutManager = CLS_LayoutManager()
+        clsLayoutManager.set_screen_dimensions(1920, 1080)
+        clsSectionManager = CLS_SectionManager(clsLayoutManager)
+        for index in range(1, 5):
+            section_id = str(index)
+            clsViewSection = self.create_test_section(clsSectionManager, section_id)
+            clsRenderer = clsViewSection._clsRenderer
+            with patch.object(clsViewSection, "show", wraps=clsViewSection.show) as show, \
+                    patch.object(clsRenderer, "render") as render, \
+                    patch.object(clsLayoutManager, "calculate_layouts", wraps=clsLayoutManager.calculate_layouts) as calculate_layouts:
+                clsSectionManager.on_section_loaded(section_id)
+                calculate_layouts.assert_called_once_with(index)
+                stJobLayout = clsSectionManager._stJobLayouts[section_id]
+                show.assert_called_once_with(stJobLayout)
+                render.assert_called_once_with(stJobLayout)
+                self.assertIs(show.call_args.args[0], stJobLayout)
+                self.assertIs(render.call_args.args[0], stJobLayout)
+                self.assertIs(clsViewSection._clsRenderer, clsRenderer)
+
     def test_on_section_loaded_requests_show_when_space_available(self):
         for number_of_active_section in range(4):
             with self.subTest(number_of_active_section=number_of_active_section):
@@ -190,9 +210,10 @@ class TestSectionManager(unittest.TestCase):
         clsViewSection.background()
         clsSectionManager.show_section("section")
         self.assertEqual(clsSectionManager._stJobLayouts, {})
-        self.assertIsNone(clsSectionManager.update_layout())
+        self.assertEqual(clsSectionManager.update_layout(), [])
+        self.assertIs(clsViewSection.state, E_ViewSectionState.BACKGROUND)
         clsLayoutManager.set_screen_dimensions(800, 600)
-        clsSectionManager.update_layout()
+        clsSectionManager.show_section("section")
         self.assertEqual(clsSectionManager._stJobLayouts, {"section": ST_JobLayout(200, 150, 400, 300)})
         clsSectionManager.clear_sections()
         self.assertEqual(clsSectionManager._stJobLayouts, {})
@@ -247,14 +268,14 @@ class TestSectionManager(unittest.TestCase):
         with patch.object(clsLayoutManager, "calculate_layouts", return_value=stJobLayouts):
             self.assertIs(clsSectionManager.update_layout(), stJobLayouts)
 
-    def test_show_recalculates_after_state_change(self):
+    def test_show_calculates_target_layout_before_state_change(self):
         clsLayoutManager = Mock(spec=CLS_LayoutManager)
         clsSectionManager = CLS_SectionManager(clsLayoutManager)
         clsViewSection = self.create_test_section(clsSectionManager, "section")
         clsViewSection.background()
 
         def calculate_layouts(number_of_active_section):
-            self.assertIs(clsViewSection.state, E_ViewSectionState.VISIBLE)
+            self.assertIs(clsViewSection.state, E_ViewSectionState.BACKGROUND)
             self.assertEqual(number_of_active_section, 1)
             return [ST_JobLayout(0, 0, 960, 540)]
 

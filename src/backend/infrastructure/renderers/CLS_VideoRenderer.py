@@ -1,3 +1,6 @@
+from ...domain.DUT.STRUCT.ST_JobLayout import ST_JobLayout
+
+
 class CLS_VideoRenderer:
     # Check container signatures without preparing playback.
     def load(self, file_path: str) -> bool:
@@ -11,3 +14,7 @@ class CLS_VideoRenderer:
             )
         except (OSError, ValueError):
             return False
+
+    # Frontend rendering will be connected in a later step.
+    def render(self, stJobLayout: ST_JobLayout) -> None:
+        pass

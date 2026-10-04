@@ -2,6 +2,7 @@ from pathlib                                      import Path
 
 from .DUT.ENUM.E_FileType                         import E_FileType
 from .DUT.ENUM.E_ViewSectionState                 import E_ViewSectionState
+from .DUT.STRUCT.ST_JobLayout                     import ST_JobLayout
 from ..infrastructure.renderers.CLS_PDFRenderer   import CLS_PDFRenderer
 from ..infrastructure.renderers.CLS_ImageRenderer import CLS_ImageRenderer
 from ..infrastructure.renderers.CLS_VideoRenderer import CLS_VideoRenderer
@@ -83,7 +84,7 @@ class CLS_ViewSection:
             self.error()
         print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} initialize() termine state={self._state}")
 
-    # A successful load stays here until the visibility policy is defined.
+    # Leave successful loading in LOADING for SectionManager's visibility decision.
     def loading(self) -> None:
         self._state = E_ViewSectionState.LOADING
         if self._clsRenderer is None:
@@ -106,11 +107,13 @@ class CLS_ViewSection:
     def error(self) -> None:
         self._state = E_ViewSectionState.ERROR
 
-    # Allow visibility only from the background state.
-    def show(self) -> None:
+    # Allow visibility after loading or while returning from the background.
+    def show(self, stJobLayout: ST_JobLayout) -> None:
         previous_state = self._state
-        if self._state == E_ViewSectionState.BACKGROUND:
+        if self._state in (E_ViewSectionState.LOADING, E_ViewSectionState.BACKGROUND):
             self.visible()
+            if self._clsRenderer is not None:
+                self._clsRenderer.render(stJobLayout)
         print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} SHOW {previous_state} -> {self._state}")
 
     # Allow hiding only from the visible state.

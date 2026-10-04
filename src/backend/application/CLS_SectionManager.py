@@ -71,12 +71,14 @@ class CLS_SectionManager:
     def show_section(self, section_id: str) -> None:
         clsViewSection = self.get_section(section_id)
         if clsViewSection is not None:
-            if clsViewSection.state == E_ViewSectionState.BACKGROUND and self.get_number_of_active_section() >= 4:
+            if clsViewSection.state not in (E_ViewSectionState.LOADING, E_ViewSectionState.BACKGROUND):
                 return
-            previous_state = clsViewSection.state
-            clsViewSection.show()
-            if clsViewSection.state != previous_state:
-                self.update_layout()
+            if self.get_number_of_active_section() >= 4:
+                return
+            stJobLayouts = self._recompute_layouts_if_needed(clsViewSection)
+            if stJobLayouts is None:
+                return
+            clsViewSection.show(self._stJobLayouts[section_id])
 
         print(
             "[TRACE TEMP][SectionManager] Section créée et enregistrée dans _view_sections\n"
@@ -123,10 +125,10 @@ class CLS_SectionManager:
         return self._recompute_layouts_if_needed()
 
     # Registry order determines the order of visible windows.
-    def _recompute_layouts_if_needed(self) -> list[ST_JobLayout] | None:
+    def _recompute_layouts_if_needed(self, clsTargetViewSection: CLS_ViewSection | None = None) -> list[ST_JobLayout] | None:
         clsVisibleViewSections = [
             clsViewSection for clsViewSection in self._view_sections.values()
-            if clsViewSection.state == E_ViewSectionState.VISIBLE
+            if clsViewSection.state == E_ViewSectionState.VISIBLE or clsViewSection is clsTargetViewSection
         ]
         number_of_active_section = len(clsVisibleViewSections)
         if number_of_active_section == 0:
