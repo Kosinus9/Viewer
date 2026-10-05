@@ -3,8 +3,8 @@ from uuid                                           import uuid4
 from .CLS_SectionManager                            import CLS_SectionManager
 from .CLS_TimerLifecycleManager                     import CLS_TimerLifecycleManager
 from ..infrastructure.CLS_FrontendBridge            import CLS_FrontendBridge
-from ..domain.DUT.STRUCT.ST_FrontendToBackendData   import ST_FrontendToBackendData
 
+from ..domain.DUT.STRUCT.ST_FrontendToBackendData   import ST_FrontendToBackendData
 from ..domain.DUT.ENUM.E_CommandType                import E_CommandType
 from ..domain.DUT.STRUCT.ST_Command                 import ST_Command
 from ..domain.DUT.STRUCT.ST_Job                     import ST_Job

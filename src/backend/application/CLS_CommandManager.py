@@ -1,7 +1,8 @@
 ﻿from ..domain.DUT.ENUM.E_CommandType import E_CommandType
-from ..domain.DUT.STRUCT.ST_Command  import ST_Command
-from pathlib                       import Path
 
+from ..domain.DUT.STRUCT.ST_Command  import ST_Command
+
+from pathlib                         import Path
 
 class CLS_CommandManager:
     def create_open_command(self, file_path: str) -> ST_Command:

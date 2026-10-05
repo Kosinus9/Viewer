@@ -1,4 +1,5 @@
 from ..domain.DUT.STRUCT.ST_JobLayout          import ST_JobLayout
+
 from ..infrastructure.CLS_ConfigurationManager import CLS_ConfigurationManager
 
 

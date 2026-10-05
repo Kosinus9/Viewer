@@ -1,13 +1,15 @@
-from pathlib                                      import Path
+from pathlib                                       import Path
 
-from .DUT.ENUM.E_FileType                         import E_FileType
-from .DUT.ENUM.E_ViewSectionState                 import E_ViewSectionState
-from .DUT.STRUCT.ST_JobLayout                     import ST_JobLayout
+from .DUT.ENUM.E_FileType                          import E_FileType
+from .DUT.ENUM.E_ViewSectionState                  import E_ViewSectionState
+
+from .DUT.STRUCT.ST_JobLayout                      import ST_JobLayout
 from .DUT.STRUCT.ST_BackendToFrontendData          import ST_BackendToFrontendData
-from ..infrastructure.renderers.CLS_PDFRenderer   import CLS_PDFRenderer
-from ..infrastructure.renderers.CLS_ImageRenderer import CLS_ImageRenderer
-from ..infrastructure.renderers.CLS_VideoRenderer import CLS_VideoRenderer
-from ..infrastructure.renderers.CLS_TextRenderer  import CLS_TextRenderer
+
+from ..infrastructure.renderers.CLS_PDFRenderer    import CLS_PDFRenderer
+from ..infrastructure.renderers.CLS_ImageRenderer  import CLS_ImageRenderer
+from ..infrastructure.renderers.CLS_VideoRenderer  import CLS_VideoRenderer
+from ..infrastructure.renderers.CLS_TextRenderer   import CLS_TextRenderer
 
 # Represent a single section managed by CLS_SectionManager.
 class CLS_ViewSection:

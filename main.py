@@ -18,13 +18,13 @@ def main(argv: list[str] | None = None) -> None:
     args   = parser.parse_args(argv)
     print(f"\n[TRACE TEMP][main] Reception du chemin\n  file_path : {args.file_path}\n")
 
-    clsCommandManager        = CLS_CommandManager()
-    clsLayoutManager         = CLS_LayoutManager()
-    clsSectionManager        = CLS_SectionManager(clsLayoutManager)
-    clsPlatformAdapter       = CLS_PlatformAdapter()
-    clsTimerLifecycleManager = CLS_TimerLifecycleManager()
-    clsFrontendBridge        = CLS_FrontendBridge()
-    clsViewerController      = CLS_ViewerController(
+    clsCommandManager           = CLS_CommandManager()
+    clsLayoutManager            = CLS_LayoutManager()
+    clsSectionManager           = CLS_SectionManager(clsLayoutManager)
+    clsPlatformAdapter          = CLS_PlatformAdapter()
+    clsTimerLifecycleManager    = CLS_TimerLifecycleManager()
+    clsFrontendBridge           = CLS_FrontendBridge()
+    clsViewerController         = CLS_ViewerController(
                                                     clsSectionManager,
                                                     clsTimerLifecycleManager,
                                                     clsFrontendBridge
@@ -40,3 +40,5 @@ def main(argv: list[str] | None = None) -> None:
 
 if __name__ == "__main__":
     main()
+
+
