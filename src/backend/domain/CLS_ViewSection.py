@@ -118,6 +118,7 @@ class CLS_ViewSection:
         print(f"[TRACE TEMP][ViewSection] section_id={self._section_id} SHOW {previous_state} -> {self._state}")
         return stBackendToFrontendData
 
+
     # Forward the layout to the renderer already owned by this section.
     def send_layout_to_renderer_for_display(self, stJobLayout: ST_JobLayout) -> ST_BackendToFrontendData | None:
         if self._clsRenderer is not None:
